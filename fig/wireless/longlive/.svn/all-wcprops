@@ -1,0 +1,89 @@
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/performance/conext2010/!svn/ver/75/ComputerNetworks2012/fig/wireless/longlive
+END
+loss_rate.fig
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/performance/conext2010/!svn/ver/75/ComputerNetworks2012/fig/wireless/longlive/loss_rate.fig
+END
+loss_rate.eps
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/performance/conext2010/!svn/ver/75/ComputerNetworks2012/fig/wireless/longlive/loss_rate.eps
+END
+tput_ratio_buffersize_2_0.fig
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/performance/conext2010/!svn/ver/75/ComputerNetworks2012/fig/wireless/longlive/tput_ratio_buffersize_2_0.fig
+END
+tput_ratio_buffersize_2_0.eps
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/performance/conext2010/!svn/ver/75/ComputerNetworks2012/fig/wireless/longlive/tput_ratio_buffersize_2_0.eps
+END
+efdack_rtt_cwnd.fig
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/performance/conext2010/!svn/ver/75/ComputerNetworks2012/fig/wireless/longlive/efdack_rtt_cwnd.fig
+END
+pefd_rtt_cwnd.fig
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/performance/conext2010/!svn/ver/75/ComputerNetworks2012/fig/wireless/longlive/pefd_rtt_cwnd.fig
+END
+efdack_rtt_cwnd.eps
+K 25
+svn:wc:ra_dav:version-url
+V 98
+/performance/conext2010/!svn/ver/75/ComputerNetworks2012/fig/wireless/longlive/efdack_rtt_cwnd.eps
+END
+befd_rtt_cwnd.fig
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/performance/conext2010/!svn/ver/75/ComputerNetworks2012/fig/wireless/longlive/befd_rtt_cwnd.fig
+END
+pefd_rtt_cwnd.eps
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/performance/conext2010/!svn/ver/75/ComputerNetworks2012/fig/wireless/longlive/pefd_rtt_cwnd.eps
+END
+tput_buffersize_stack_2_0.fig
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/performance/conext2010/!svn/ver/75/ComputerNetworks2012/fig/wireless/longlive/tput_buffersize_stack_2_0.fig
+END
+befd_rtt_cwnd.eps
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/performance/conext2010/!svn/ver/75/ComputerNetworks2012/fig/wireless/longlive/befd_rtt_cwnd.eps
+END
+fifo_rtt_cwnd.fig
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/performance/conext2010/!svn/ver/75/ComputerNetworks2012/fig/wireless/longlive/fifo_rtt_cwnd.fig
+END
+tput_buffersize_stack_2_0.eps
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/performance/conext2010/!svn/ver/75/ComputerNetworks2012/fig/wireless/longlive/tput_buffersize_stack_2_0.eps
+END
+fifo_rtt_cwnd.eps
+K 25
+svn:wc:ra_dav:version-url
+V 96
+/performance/conext2010/!svn/ver/75/ComputerNetworks2012/fig/wireless/longlive/fifo_rtt_cwnd.eps
+END
