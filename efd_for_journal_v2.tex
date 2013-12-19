@@ -385,6 +385,85 @@ In all cases, the global load is controlled by tuning the arrival rate of reques
 %As the first step of study, we generate unidirectional traffic for simplicity. In our case, that is TCP traffic in terms of FTP/GENERIC applications directing from servers to clients (i.e. from \{1, 2, 3, 4, 5\} to \{8, 9, 10, 11, 12\} in Figure \ref{fig:result1}).
 Transfers are performed over TCP or UDP depending on the simulation. For each simulation set-up, we consider an underload and an overload regime, which correspond respectively to workloads of 8 and 15 Mb/s (80\% and 150\% of the bottleneck capacity). For TCP simulations, we use the GENERIC-FTP model of Qualnet, which corresponds to an unidirectional transfer of data. For UDP transfers, we use a CBR application model where one controls the inter-packet arrival time. The latter enables to control the exact rate at which packets are sent to the bottleneck. In both TCP and UDP cases, IP packets have a fixed size of 1500 bytes.
 
+
+\subsection{EFD Internal Dynamics }
+
+
+In this section, we present a detailed analysis of the way EFD operates. We focus on the following aspects:
+\begin{itemize}
+\item The evolution of the flow table size;
+\item How traffic is split between the low and high priority queue.
+\item  How connections are fragmented by the scheduler due to the insertion/removal process within the flow table;
+\end{itemize}
+
+
+% \subsection{Behavior Analysis}
+% All simulations are performed lasting the same duration of 500 seconds in our experiments. Workload with two different throughput: 8Mbit/s and 20Mbit/s are generated in our simulation, producing underload ($\rho<1$) and overload ($\rho>1$) conditions respectively since the bottleneck link capacity is 10 Mbit/s. As the first step, it's interesting to study the behavior of EFD on how queue with limited maximum size grows, how flow table goes up and down, how the flow volumes are splitted and how flow sizes distribute in two virtual queues.
+
+% In contrast to FIFO, LAS and RuN2C, flow splitting up is a particular phenomenon in EFD, showing critical effect on the behavior. It's evident that flows with different rates (either high rate or low rate) may exhibit quite distinguishable behavior on flow splitting up. Interestingly, it makes sense to investigate how rate affects the behavior, which is carefully studied in this section using CBR traffic with different rates. In addition, pursuiting how flow volumes distribute in two virtual queues with different priorities can help to better understand how EFD works. 
+
+\subsubsection{Flow table}
+
+Due to the discarding mechanism of flow entries within the flow table in EFD, a flow entry exists in the flow table only if at least one packet of the flow resides in the finite queue. An important consequence is that the flow table size is bounded by the physical queue size in packets\footnote{In most if not all active equipments -- routers, access points -- queues are counted in packets and not in bytes.}. Indeed, in the worst case, there is as many entries as distinct flows in the physical queue, each with one packet.
+%Therefore, it is clear that flow table size is upper bounded by queue size while it mainly depends on the unbouned number of flows on high speed link in LAS, 
+
+For the TCP workload, we plot in Figure \ref{fig:dynamics} the instantaneous queue size and the instantaneous flow table size in both two regimes: underload and overload. Remind that the buffer size is 300 packets in our experiments. Figure \ref{fig:dynamics} reveals that both flow table and packet queue grow up as the traffic intensity increases, but the table size is consistently below the queue size. Even in the overload case, the flow table size remains fairly small. We further investigate this issue in Section \ref{sec:table_size}.%changes from underload to overload. Especially, packet queue reaches full at most time in overload case.  
+
+\begin{figure}[ht]
+  \centering
+  \subfigure[workload of 8Mbit/s (underload)]{\label{fig:wifib-01}\includegraphics[width=0.49\textwidth]{./fig/wired/internal_dynamics/lq_8}}
+  \subfigure[workload of 15Mbit/s (overload)]{\label{fig:wifia-01}\includegraphics[width=0.49\textwidth]{./fig/wired/internal_dynamics/lq_20}}  
+  \caption{Queue size \& Table size}
+  \label{fig:dynamics}
+\end{figure}
+
+\subsubsection{Virtual queue sizes}
+
+As EFD features two queues with high and low priority respectively from the implementation point of view, Figure \ref{fig:queue_evo} depicts the evolution of the two virtual queue sizes, together with the overall queue (\textit{i.e.} physical queue) size in underload and overload. One clearly sees that the low priority queue carries the bulk of the traffic. It is in line with our expectation as we want the high priority queue to be lightly loaded so that packets can be served as fast as possible, in order to grant short flows with low mean response times. 
+
+
+\begin{figure}[ht]
+  \centering
+  \subfigure[workload of 8Mbit/s (underload)]{\label{fig:wifib-01}\includegraphics[width=0.49\textwidth]{./fig/wired/internal_dynamics/slpktsub_8.eps}}
+  \subfigure[workload of 15Mbit/s (overload)]{\label{fig:wifia-01}\includegraphics[width=0.49\textwidth]{./fig/wired/internal_dynamics/slpktsub_20.eps}}  
+  %\includegraphics[width=0.4\textwidth]{./fig/internal_dynamics/slpktsub_20}
+  \caption{Evolution of high and low priority queue size  in both underload and overload.}
+  \label{fig:queue_evo}
+\end{figure}
+
+
+\subsubsection{Flow fragmentation} \label{sec:fragmentation}
+
+With EFD, a connection can be fragmented into many flows - each one is treated as fresh by the scheduler. In addition, the packets of one of these flows might be partly serviced in high priority or low priority queue: the first \textit{th} packets are serviced by the high priority queue and the rest by the low priority queue. We call this phenomenon ``flow fragmentation''. It is in clear contrast to FIFO, LAS and RuN2C.
+
+In practice, several phenomena can lead to break a connection into many fragments. For instance,  during connection establishment, the TCP slow start algorithm limits the number of packets in flight so that it does not continuously occupy the buffer. This is however not a problem, as those flows are smaller than $th$ and thus the start of the TCP transfer will receive a high priority. If the flow lasts longer and it is effectively able to use its share of the capacity, then the connection will eventually occupy  the buffer without interruption and therefore stay in the flow table. Figure \ref{fig:seg8} illustrates such a scenario. It is apparent that, as the connection size increases, the number of fragments tends to reach a limit so that, for the longest connections, a small number of fragments correspond to many packets.
+
+%"Fragmentation" is often used to describe the phenomenon in which data packet for transmission is shaped by cutting it into certain amount of small packets due to the limitation of MTU in the network. Here we borrow this concept for flows instead of packets, meaning that a single flow is cut into several pieces for some reason.  
+
+%Figure \ref{fig:result5} shows the flow fragmentations in the simulation when the EFD scheduling policy is applied over the bottleneck link. As we know that, EFD's entry-discarding mechanism can effectively restrain flow table from rapidly growing by bounding it with the finite buffer size, but result in flow fragmentation at the same time. In our context, flow fragmentation means that one flow (or connection) is splitted into several blocks, leading to entry recreation time after time and more packet incorporations in high priority queue. From Figure \ref{fig:result5}(a), it's evident that the mass (90th percentage) of the connection fragmentations are distributed in the range of [6, 37], while the number of the fragmentations with dominant values are carried by few coutable connections.
+
+%Figure \ref{fig:seg8} depicts the average number of flows per connection. Those flows are also called segments.  We observe that the average number of segments increases with the connection size, which means that long connections are more prone to be fragmented. This figure calls for several remarks. First, one can notice that for small transfer sizes, the number of segments is larger than the number of data packets to be transmitted. This is because of the TCP control packets. Let us consider the simplest case: a transfer of a single MSS packet. In this case, in the server to client direction, which is the one interest, the scheduler will see one SYN/ACK packet, one data packet and one FIN packet. Ideally, each packet is separated from the other by one RTT. Hence, from the scheduler viewpoint, it is likely that they generate 3 distinct flows or segments. When the transfer size increase, the number of segments also increase but at a smaller speed, as one lays below the bissector line, but still quite close to it (even if the log-log scale might be misleading). One thus have the feeling that each segment corresponds to a modest number of packets. If this were the case, then most of the packets would be directed to the high priority queue, and EFD would degenerate to FIFO. This is however not the case as we have seen in Figure \ref{fig:queue_evo} that the short queue was significantly smaller than the large queue. 
+
+\begin{figure}[ht]
+  \centering
+  %\subfigure[Distribution of flow fragmentation]{\label{fig:wifib-01}\includegraphics[width=0.49\textwidth]{./fig/seg_cdf_8.eps}}
+  %\subfigure[Relationship between flow size and fragmentation]{\label{fig:wifia-01}\includegraphics[width=0.49\textwidth]{./fig/segment_8.eps}}  
+  \includegraphics[width=0.7\textwidth]{./fig/wired/internal_dynamics/segment_8}
+  \caption{Number of segments per connection - workload of 8Mbit/s}
+  \label{fig:seg8}
+\end{figure}
+
+
+To get a better understanding of the way EFD partitions traffic among the low and high priority queues, we present in Figure \ref{fig:flow_dist}(a) the distributions of transfer sizes in both queues. Due to the way EFD operates, a given transfer is broken in possibly many flows or fragments from the scheduler's viewpoint. In addition, the \textit{th} first packets of each flow are serviced by the high priority queue and the rest, if any by the low priority queue. For each TCP transfer, we sum the total number of packets serviced at the high priority queue and the low priority queue respectively over all the segments of this transfer. We further add the original distribution of transfer sizes (at the TCP layer). We observe from  Figure \ref{fig:flow_dist}(a) that the distribution of flow sizes  in the low priority queue consists of larger flows than in the high priority queue, even though long transfers can be partially or fully serviced in the high priority queue. This behavior of EFD is in contrast to Run2C, which is another Multi-Level Processor Policy, with the same number of levels and policy at each, but that adopts a fixed threshold per transfer: the first \textit{th} packet goes to the high priority queue while the rest goes to the low priority queue -- see  Figure \ref{fig:flow_dist}(b). Clearly, EFD imposes a higher load on the high priority queue as compared to Run2C. This should not be interpreted as a drawback of EFD as compared to Run2C since it allows EFD to account for rates and not only for volumes, as we further illustrate with the UDP experiments in Section \ref{sec:multi_media}. 
+
+\begin{figure}[ht]
+  \centering
+  \subfigure[EFD]{\includegraphics[width=0.49\textwidth]{./fig/wired/internal_dynamics/cumulated_cdf_8}}
+ \subfigure[RuN2C]{\includegraphics[width=0.49\textwidth]{./fig/wired/internal_dynamics/run2c_isolated_cdf_8}}
+  \caption{Distribution of flow volumes in two queues - workload of 8Mbit/s}
+  \label{fig:flow_dist}
+\end{figure}
+
 \subsection{Performation Evaluation}
 We compare the performance of EFD to other scheduling policies. Our objective is to illustrate the ability of EFD to fulfill the 4 objectives listed in the introduction, namely (i) low bookkeeping cost, (ii) low response time to small flows, (iii) avoiding lock-outs, (iv) protecting long lasting delay sensitive flows.%differentiating flows based on volumes but also based on rate/burstiness. 
 
@@ -599,7 +678,7 @@ The low priority queue of EFD is managed as a FIFO queue. As such, we expect EFD
 
 
 
-\subsubsection{The Case of Multimedia Traffic}
+\subsubsection{The Case of Multimedia Traffic}\label{sec:multi_media}
 In the TCP scenario considered above, FTP servers were homogeneous in the sense that they had the same access link capacity and the same latency to each client. The transfer rate was controlled by TCP. In such conditions, it is difficult to illustrate how EFD takes into accounts the actual transmission rate of data sources. In this section, we have added a single CBR flow to the TCP workload used previously.% traffic defined in Section \ref{sec:workload} (TCP transfers of Zipf distributed flow size and exponential distributed inter-arrival time). 
 
 We consider two  rates 64Kb/s and 500Kb/s for the CBR flow, representing typical audio (e.g., VoIP) and video stream (e.g., YouTube video - even though the YouTube uses HTTP streaming)  respectively. The background load also varies - 4, 8 and 12Mbps-  which correspond to underload/moderate/overload regimes as the bottleneck capacity is 10 Mbps. To avoid the warm-up period of the background workload, the CBR flow is started at time t=10s and keeps on sending packets continuously until the end of the simulation. The simulation lasts for 1000 seconds. Since small buffers are prone to packet loss, we assign to the bottleneck a buffer of 50 packets, instead of 300 packets previously. The loss rates experienced by the CBR flow are given in Figure \ref{fig:loss_rate}, in which a well-known fair scheduling scheme called SCFQ \cite{Golestani94SCFQ} is added for the comparison, in addition to the disciplines mentioned before.
