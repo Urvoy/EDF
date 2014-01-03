@@ -388,13 +388,13 @@ A last point to mention is that each of the scheduling policies that we consider
 
 \section{EFD in Wired Networks}
 \label{sec:perf_wired}
-In this section, we investigate the performance of EFD in wired networks, using a large buffer size of 300 packets. We first present the simulation methodology, and then evaluate EFD's performance in several aspects, including the overhead of flow state keeping, mean response time, concern of starvation to long flows and the ability of taking rate into account when scheduling. 
+In this section, we investigate the performance of EFD in wired networks. Such a scenario enables to consider relatively large buffer sizes, which might be a plus for EFD as its memory is proportional to depth of the buffer. Specifically, we fix the buffer size at the bottleneck to be 300 packets, which means 450 KB. It is still fairly small, as buffer size can be a few MB or more, see \url{http://people.ucsc.edu/~warner/buffer.html}. We investigate the impact of smaller buffer sizes in Section \ref{sec:perf_wlan} where we consider WLAN scenarios.%, using a large buffer size of 300 packets. We first present the simulation methodology, and then evaluate EFD's performance in several aspects, including the overhead of flow state keeping, mean response time, concern of starvation to long flows and the ability of taking rate into account when scheduling. 
 
 \subsection{Simulation methodology} \label{sec:wired_methodology}
 We present the network set up - network topology and workload - used to evaluate the performance of EFD and to compare it to other scheduling policies. All simulations are done using QualNet 4.5 \cite{Qualnet}.
 
 \subsubsection{Network Topology}
-We consider the case of a single bottleneck network, using the classical dumbbell topology depicted in Figure \ref{fig:wired_topology}. A group of senders (nodes 1 to 5) are connected to a router (node 6) by 100Mb/s bandwidth links and a group of receivers (nodes 8 to 12) are connected to another router (node 7) with a 100Mb/s bandwidth link. The traffic is conveyed over the link connecting the two routers with a capacity of 10Mb/s - which is therefore the bottleneck link. All links have a propagation delay of 1 ms.
+We consider the case of a single bottleneck network, using the classical dumbbell topology depicted in Figure \ref{fig:wired_topology}. The buffer size is  fixed and equal to 300 packets. A group of senders (nodes 1 to 5) are connected to a router (node 6) by 100Mb/s bandwidth links and a group of receivers (nodes 8 to 12) are connected to another router (node 7) with a 100Mb/s bandwidth link. The traffic is conveyed over the link connecting the two routers with a capacity of 10Mb/s - which is therefore the bottleneck link. All links have a propagation delay of 1 ms.
 
 \begin{figure}[ht!]
   \centering
@@ -413,13 +413,13 @@ We consider the case of a single bottleneck network, using the classical dumbbel
 
 
 \subsubsection{Workload generation}\label{sec:workload}
-Suppose that the bottleneck link has a capacity of C in bit per second. The traffic demand, expressed as a bit rate, is the product of the flow arrival rate $\lambda$ and the average flow size $E[\sigma]$. The load offered to the link is then defined as:
+Suppose that the bottleneck link has a capacity of C bits/s. The traffic demand, expressed as a bit rate, is the product of the flow arrival rate $\lambda$ and the average flow size $E[\sigma]$. The load offered to the link is then defined as:
 
 \begin{equation}
 \rho = \frac{\lambda E[\sigma]}{C}
 \end{equation}
 
-In all cases, the global load is controlled by tuning the arrival rate of requests. Thus, the congestion level increases as a function of the load. The flow arrivals follow a Poisson process, and the content requested is distributed according to a bounded Zipf distribution. Note that a bounded Zipf distribution is a discrete analog of a continuous bounded Pareto distribution, and Pareto is a heavy-tailed distribution usually adopted for modeling flows in the Internet. %Figure \ref{fig:wired_topology}(b) gives the flow size distribution used in the simulation. %Due to the fact that TCP traffic occupy mass of current Internet traffic, without loss of generality, TCP transfers are generated instead of UDP and FTP/GENERIC applications are applied in our simulation. 
+In all cases, the global load is controlled by tuning the arrival rate of requests. Thus, the congestion level increases as a function of the load. The flow arrivals follow a Poisson process, and the content requested is distributed according to a bounded Zipf distribution. Note that a bounded Zipf distribution is a discrete analog of the continuous bounded Pareto distribution, and Pareto is a heavy-tailed distribution usually adopted for modeling flows in the Internet. %Figure \ref{fig:wired_topology}(b) gives the flow size distribution used in the simulation. %Due to the fact that TCP traffic occupy mass of current Internet traffic, without loss of generality, TCP transfers are generated instead of UDP and FTP/GENERIC applications are applied in our simulation. 
  
 %As the first step of study, we generate unidirectional traffic for simplicity. In our case, that is TCP traffic in terms of FTP/GENERIC applications directing from servers to clients (i.e. from \{1, 2, 3, 4, 5\} to \{8, 9, 10, 11, 12\} in Figure \ref{fig:result1}).
 Transfers are performed over TCP or UDP depending on the simulation. For each simulation set-up, we consider an underload and an overload regime, which correspond respectively to workloads of 8 and 15 Mb/s (80\% and 150\% of the bottleneck capacity). For TCP simulations, we use the GENERIC-FTP model of Qualnet, which corresponds to an unidirectional transfer of data. For UDP transfers, we use a CBR application model where one controls the inter-packet arrival time. The latter enables to control the exact rate at which packets are sent to the bottleneck. In both TCP and UDP cases, IP packets have a fixed size of 1500 bytes.
@@ -428,7 +428,7 @@ Transfers are performed over TCP or UDP depending on the simulation. For each si
 \subsection{EFD Internal Dynamics }
 
 
-In this section, we present a detailed analysis of the way EFD operates. We focus on the following aspects:
+In this section, we present a detailed analysis of the way EFD manages flows. This is of utmost interest as it is a key distinguishing property of EFD as compared to other size-based scheduling policy. We focus on the following aspects:
 \begin{itemize}
 \item The evolution of the flow table size;
 \item How traffic is split between the low and high priority queue.
@@ -443,10 +443,10 @@ In this section, we present a detailed analysis of the way EFD operates. We focu
 
 \subsubsection{Flow table}
 
-Due to the discarding mechanism of flow entries within the flow table in EFD, a flow entry exists in the flow table only if at least one packet of the flow resides in the finite queue. An important consequence is that the flow table size is bounded by the physical queue size in packets\footnote{In most if not all active equipments -- routers, access points -- queues are counted in packets and not in bytes.}. Indeed, in the worst case, there is as many entries as distinct flows in the physical queue, each with one packet.
+Due to the discarding mechanism of flow entries within the flow table in EFD, a flow entry exists in the flow table only if at least one packet of the flow is present in the queue. As stated in Section \ref{sec:efd_alg}, an important consequence is that the flow table size is bounded by the physical queue size in packets\footnote{In most if not all active equipments -- routers, access points -- queues are counted in packets and not in bytes.}. %Indeed, in the worst case, there is as many entries as distinct flows in the physical queue, each with one packet.
 %Therefore, it is clear that flow table size is upper bounded by queue size while it mainly depends on the unbouned number of flows on high speed link in LAS, 
 
-For the TCP workload, we plot in Figure \ref{fig:dynamics} the instantaneous queue size and the instantaneous flow table size in both two regimes: underload and overload. Remind that the buffer size is 300 packets in our experiments. Figure \ref{fig:dynamics} reveals that both flow table and packet queue grow up as the traffic intensity increases, but the table size is consistently below the queue size. Even in the overload case, the flow table size remains fairly small. We further investigate this issue in Section \ref{sec:table_size}.%changes from underload to overload. Especially, packet queue reaches full at most time in overload case.  
+For the TCP workload, we plot in Figure \ref{fig:dynamics} the instantaneous queue size and the instantaneous flow table size in underload and overload. Remind that the buffer size is 300 packets in our experiments. Figure \ref{fig:dynamics} reveals that both flow table and packet queue grow up as the traffic intensity increases, but the table size is consistently below the queue size. Even in the overload case, the flow table size remains fairly small. We further investigate this issue in Section \ref{sec:table_size}.%changes from underload to overload. Especially, packet queue reaches full at most time in overload case.  
 
 \begin{figure}[ht]
   \centering
@@ -458,7 +458,7 @@ For the TCP workload, we plot in Figure \ref{fig:dynamics} the instantaneous que
 
 \subsubsection{Virtual queue sizes}
 
-As EFD features two queues with high and low priority respectively from the implementation point of view, Figure \ref{fig:queue_evo} depicts the evolution of the two virtual queue sizes, together with the overall queue (\textit{i.e.} physical queue) size in underload and overload. One clearly sees that the low priority queue carries the bulk of the traffic. It is in line with our expectation as we want the high priority queue to be lightly loaded so that packets can be served as fast as possible, in order to grant short flows with low mean response times. 
+As EFD features two queues with high and low priority respectively, Figure \ref{fig:queue_evo} depicts the evolution of the two virtual queue sizes, together with the overall queue (\textit{i.e.} physical queue) size in underload and overload. One clearly sees that the low priority queue carries the bulk of the traffic. It is in line with our expectation as we want the high priority queue to be lightly loaded so that packets can be served as fast as possible, in order to grant short flows with low mean response times. While the bufferbloat phenomenon is often presented as the persistence of large queues that degrade the performance of every flow, we see that with the size-based scheduling approach, we can have simultaneously high buffer occupancy while still low response to young/short flows.
 
 
 \begin{figure}[ht]
@@ -475,7 +475,7 @@ As EFD features two queues with high and low priority respectively from the impl
 
 With EFD, a connection can be fragmented into many flows - each one is treated as fresh by the scheduler. In addition, the packets of one of these flows might be partly serviced in high priority or low priority queue: the first \textit{th} packets are serviced by the high priority queue and the rest by the low priority queue. We call this phenomenon ``flow fragmentation''. It is in clear contrast to FIFO, LAS and RuN2C.
 
-In practice, several phenomena can lead to break a connection into many fragments. For instance,  during connection establishment, the TCP slow start algorithm limits the number of packets in flight so that it does not continuously occupy the buffer. This is however not a problem, as those flows are smaller than $th$ and thus the start of the TCP transfer will receive a high priority. If the flow lasts longer and it is effectively able to use its share of the capacity, then the connection will eventually occupy  the buffer without interruption and therefore stay in the flow table. Figure \ref{fig:seg8} illustrates such a scenario. It is apparent that, as the connection size increases, the number of fragments tends to reach a limit so that, for the longest connections, a small number of fragments correspond to many packets.
+In practice, several phenomena can lead to break a connection into many fragments. For instance,  during connection establishment, the TCP slow start algorithm limits the number of packets in flight so that it does not continuously occupy the buffer. This is however not a problem, as those flows are smaller than $th$ and thus young  TCP transfers will receive a high priority. If the flow lasts longer and it is effectively able to use its share of the capacity, then the connection will eventually occupy  the buffer without interruption and therefore stay in the flow table. Figure \ref{fig:seg8} illustrates such a scenario. It is apparent that, as the connection size increases, the number of fragments tends to reach a limit so that, for the longest connections, a small number of fragments correspond to many packets.
 
 %"Fragmentation" is often used to describe the phenomenon in which data packet for transmission is shaped by cutting it into certain amount of small packets due to the limitation of MTU in the network. Here we borrow this concept for flows instead of packets, meaning that a single flow is cut into several pieces for some reason.  
 
@@ -525,7 +525,7 @@ The approaches to maintain the flow table in the size-based scheduling policies 
 \item EFD deterministic approach:  the EFD approach is fully deterministic as flow entries are removed from the flow table once they have no more packet in the queue. 
 \end{itemize}
 
-In this section, we compare all the approaches presented except the ''No flow table approach'' for our TCP workload scenario. We consider one representative of each family: LAS, X-Protect and EFD. We term X-Protect a Multi-Level Processor Scheduling policy that maintains two queues, similarly to Run2C, but uses the probabilistic mechanism proposed in \cite{Kortebi04Xprotect} to track long flows\footnote{Note that this mechanism is proposed in \cite{Kortebi04Xprotect} to do admission control function and not a scheduling.}. As for the actual scheduling of packets, X-Protect mimics Run2C based on the information it possesses. If the packet does not belong to a flow in the flow table nor passes the test, it is put in the high priority queue. If it belongs to a flow in the flow table, it is put either in the high priority queue or in the low priority queue, depending on the amount of bytes sent by the flow. We use a threshold of 30KB, similar to the one used for EFD.
+In this section, we compare all the approaches presented except the ''No flow table approach'' for our TCP workload scenario. We consider one representative of each family: LAS, X-Protect and EFD. We term X-Protect a Multi-Level Processor Scheduling policy that maintains two queues, similarly to Run2C, but uses the probabilistic mechanism proposed in \cite{Kortebi04Xprotect} to track long flows\footnote{Note that this mechanism is proposed in \cite{Kortebi04Xprotect} to do admission control function and not a scheduling.}. As for the actual scheduling of packets, X-Protect mimics Run2C based on the information it possesses. If the packet does not belong to a flow in the flow table nor passes the test, it is put in the high priority queue. If it belongs to a flow in the flow table, it is put either in the high priority queue or in the low priority queue, depending on the amount of bytes sent by the flow. We use a threshold f 30KB, similar to the one used for EFD.
 
 %As we have mentioned before, probability mechanism can be an option for the differentiation between short and long flows, which is originally proposed for admission control in Cross-protect \cite{Kortebi04Xprotect}. It sees potential improvement since we may only need to keep state information for long flows which are quite few compared to the total number of flows. In order to better understand the overhead of flow state keeping, a scheduling discipline "X-Protect" based on this probability mechanism is deployed in our simulation for comparison with LAS and EFD. Instead of keeping flow state for all active flows in LAS, X-Protect only maintains state information for those flows who pass the probability test, resulting in less resource consumption in terms of flow table size. In addition, X-Protect adopts the same two queues approach and the same buffer management strategy as EFD, while it cleans up the flow entries in the flow table periodically as LAS without entry-discarding mechanism. 
 
@@ -549,7 +549,7 @@ The evolution of  flow table size over time for load of 8Mbit/s (underload) and 
 %  \label{fig:result11}
 %\end{figure*}
 
-We observe how X-Protect roughly halves the number of tracked flows, compared to LAS. By contrast, EFD reduces it by one order of magnitude. The reason why X-Protect offers deceptive performance is the race condition that exists between the flow size distribution and the probabilistic detection mechanism. Indeed, even though a low probability, say 1\%, is used to test if a flow is long, there exists so many short flows that the number of false positives becomes quite large, which prevents the flow table from being significantly smaller than in LAS. The histograms in Figure \ref{fig:result12} confirm the good performance of EFD in underload and also overload, as EFD keeps the flow table size to a few 10s of entries at most. Note that this is clearly smaller than the actual queue size (300 packets) that constitutes an upper bound on the flow table size in EFD as explained before. We finally report the mean value and the 95\% level confidence interval of the flow talbe size over 1000 seconds simulation for both load conditions in Table \ref{tab:flow_table_size}. 
+We observe how X-Protect roughly halves the number of tracked flows, compared to LAS. By contrast, EFD reduces it by one order of magnitude. The reason why X-Protect offers deceptive performance is the race condition that exists between the flow size distribution and the probabilistic detection mechanism. Indeed, even though a low probability, say 1\%, is used to test if a flow is long, there exists so many short flows that the number of false positives becomes quite large, which prevents the flow table from being significantly smaller than in LAS. The histograms in Figure \ref{fig:result12} confirm the good performance of EFD in underload and also overload, as EFD keeps the flow table size to a few 10s of entries at most. Note that this is clearly smaller than the actual queue size (300 packets) that constitutes an upper bound on the flow table size in EFD as explained before. We also report the mean value and the 95\% level confidence interval of the flow table size over 1000 seconds simulation for both load conditions in Table \ref{tab:flow_table_size}. 
   %, benefitting from the probability mechanism for flow differentiation. However, it's still far away from our expection since the average flow table size can finally reach a small order of magnitude if flows can be well differentiated as short and long ones. In contrast to LAS and X-Protect, thanks to the entry-discarding mechanism, EFD sees encourging and considerable improvement with quite small overhead of flow state keeping. Precisely, the average flow table size keeps small in underload while it increases a bit in overload. 
 
 
@@ -587,10 +587,10 @@ We observe how X-Protect roughly halves the number of tracked flows, compared to
     \begin{tabular}{ | c | c | c | c | c |}
     \hline
 		\multicolumn{2}{|c|}{} & LAS & X-Protect & EFD \\ \hline \hline
-		8Mbit/s & mean & 392.4961 & 176.8407 & 1.9997 \\ \cline{2-5}
-		(underload) & 95\%-CI & [392.3759,  392.6163] & [176.7861,  176.8952] & [1.9962,    2.0032] \\ \hline
-		15Mbit/s & mean & 704.0326 & 352.9599 & 27.9053 \\ \cline{2-5}
-		(overload) & 95\%-CI & [703.8622,  704.2030] & [352.8678,  353.0519] & [27.8824,   27.9282] \\ \hline	
+		8Mbit/s & mean & 392.49 & 176.84 & 1.99 \\ \cline{2-5}
+		(underload) & 95\%-CI & [392.37,  392.61] & [176.78,  176.89] & [1.9962,    2.0032] \\ \hline
+		15Mbit/s & mean & 704 & 352.95 & 27.90\\ \cline{2-5}
+		(overload) & 95\%-CI & [703.8,  704.2] & [352.86,  353.05] & [27.88,   27.92] \\ \hline	
     \end{tabular}
 		}
     \label{tab:flow_table_size}  
@@ -649,7 +649,7 @@ Distributions of the response times for the (complete) short and long transfers 
 \end{figure}
 %\vspace{-5mm}
 
-As a complement to Figure \ref{fig:resp_time}, we plot the mean value together with the 95\% confidence interval of the response time over the flow size in Figure \ref{fig:resp_time_ci}. Remember that the distribution of flow sizes generated exhibits high variability - meaning that small number of longest flows carry the majority of traffic load. Thus, it is problematic when calculating the confidence interval of flow response time, especially for long flows as the number of long flows collected from the workload is limited. To handle this issue approximately, we accumulate the samples by starting from a certain flow size and spanning adjacent flow sizes if exist in an ascending order until the number of samples reaches a threshold value given (threshold value equals to 200 for example), during which the mean value of all flow sizes traversed is taken as the flow size to pair with the confidence interval. Although flow size spans a limited range of values (up to 300 MSS) compared to Figure \ref{fig:resp_time} (up to 9000 MSS) by taking the processing method presented above, Figure \ref{fig:resp_time_ci} reinforces the credibility of the simulation results. 
+As a complement to Figure \ref{fig:resp_time}, we plot the mean value together with the 95\% confidence interval of the response time over the flow size in Figure \ref{fig:resp_time_ci}. Remember that the distribution of flow sizes generated exhibits high variability - meaning that small number of longest flows carry the majority of traffic load. Thus, it is problematic when calculating the confidence interval of flow response time, especially for long flows as the number of long flows collected from the workload is limited. To handle this issue, we accumulate the samples by starting from a certain flow size and spanning adjacent flow sizes in an ascending order until the number of samples reaches a threshold value given (threshold value equals to 200 for example), during which the mean value of all flow sizes traversed is taken as the flow size to pair with the confidence interval. Although flow size spans a limited range of values (up to 300 MSS) compared to Figure \ref{fig:resp_time} (up to 9000 MSS) by taking the processing method presented above, Figure \ref{fig:resp_time_ci} confirms the phenomenon observed previously.% the credibility of the simulation results. 
 
 %\vspace{-5mm}
 \begin{figure}[ht]
@@ -663,36 +663,37 @@ As a complement to Figure \ref{fig:resp_time}, we plot the mean value together w
 %\vspace{-5mm}
 
 
-Given the flows which have completed their transfers before the end of the simulation - meaning that two FINs have been observed, we next partition them into short and long ones with the definition that long flows contribute to 50\% of the traffic load. This classification method coming from experimental study has the advantage that the meaning of short and long flows is consistently similar for both load regimes given in Table \ref{tab:resp_time}. We further summarize the mean value, along with the 95\% level confidence interval of data transfer response time for short and long flows respectively in Table \ref{tab:resp_time}. It makes sense as we are able to intuitively observe the improvement the new size-based scheduling brings from these statistic data in a synthetic way. Table \ref{tab:resp_time} confirms the ability of giving small response time to short flows with negligible penalty on long flows of size-based schedulings (LAS, LARS, Run2C and EFD) as compared to the legacy FIFO - in particular for the case of underload, in line with the results illustrated in Figure \ref{fig:resp_time}. 
-
-%quickly which  since the improvement are highly enphasized.   
-
-%Short and long flows are unfairly treated by size-based scheduling disciplines, it is therefore important to investigate the response time for short and long flows respectively, 
-
-\begin{table*}[ht]
-		\centering
-    \caption{Performance Statistics - 300MSS buffer - 10Mbit/s bottleneck link}
-		\vspace{5mm}
-		\resizebox{13cm}{!}{
-    \begin{tabular}{ | c | c | c | c | c | c | c |}
-    \hline
-		\multicolumn{3}{|c|}{} & \multicolumn{2}{|c|}{8Mbit/s - underload} & \multicolumn{2}{|c|}{15Mbit/s - overload} \\ \cline{4-7}
-		\multicolumn{3}{|c|}{} & short flows & long flows & short flows & long flows \\ \hline \hline
-		\multicolumn{3}{|c|}{Mean size (MSS)} & 21 & 1020 & 21 & 1086 \\ \hline
-		\multirow{10}{*}{\rotatebox{90}{Response time (seconds)}} & \multirow{5}{*}{mean} & FIFO & 0.390 & 3.519 & 3.264 & 55.788 \\ \cline{3-7}
-    & & LAS & 0.070 & 3.944 & 0.104 & 34.517 \\ \cline{3-7}
-		& & Run2C & 0.108 & 3.861 & 0.848 & 58.406 \\ \cline{3-7}
-		& & EFD & 0.090 & 3.758 & 0.705 & 40.014 \\ \cline{3-7}
-		& & LARS & 0.073 & 3.842 & 1.521 & 64.882 \\ \cline{2-7}
-		& \multirow{5}{*}{95\%-CI} & FIFO & [0.379, 0.400] & [2.709, 4.329] & [3.211, 3.317] & [48.951, 62.625] \\ \cline{3-7}
-    & & LAS & [0.069, 0.071] & [2.727, 5.161] & [0.099, 0.109] & [24.970, 44.064] \\ \cline{3-7}
-		& & Run2C & [0.104, 0.112] & [2.942, 4.779] & [0.808, 0.888] & [49.902, 66.911] \\ \cline{3-7}
-		& & EFD & [0.087, 0.093] & [2.887, 4.628] & [0.673, 0.738] & [34.397, 45.630] \\ \cline{3-7}
-		& & LARS & [0.071, 0.075] & [2.886, 4.798] & [1.471, 1.572] & [56.686, 73.078] \\ \hline	
-    \end{tabular}
-		}
-    \label{tab:resp_time}  
-\end{table*}
+%\textcolor{red}{I know it is unpublished but shall we keep this paragraph below?}
+%Given the flows which have completed their transfers before the end of the simulation - meaning that two FINs have been observed, we next partition them into short and long ones with the definition that long flows contribute to 50\% of the traffic load. This classification method coming from experimental study has the advantage that the meaning of short and long flows is consistently similar for both load regimes given in Table \ref{tab:resp_time}. We further summarize the mean value, along with the 95\% level confidence interval of data transfer response time for short and long flows respectively in Table \ref{tab:resp_time}. It makes sense as we are able to intuitively observe the improvement the new size-based scheduling brings from these statistic data in a synthetic way. Table \ref{tab:resp_time} confirms the ability of giving small response time to short flows with negligible penalty on long flows of size-based schedulings (LAS, LARS, Run2C and EFD) as compared to the legacy FIFO - in particular for the case of underload, in line with the results illustrated in Figure \ref{fig:resp_time}. 
+%
+%%quickly which  since the improvement are highly enphasized.   
+%
+%%Short and long flows are unfairly treated by size-based scheduling disciplines, it is therefore important to investigate the response time for short and long flows respectively, 
+%
+%\begin{table*}[ht]
+%		\centering
+%    \caption{Performance Statistics - 300MSS buffer - 10Mbit/s bottleneck link}
+%		\vspace{5mm}
+%		\resizebox{13cm}{!}{
+%    \begin{tabular}{ | c | c | c | c | c | c | c |}
+%    \hline
+%		\multicolumn{3}{|c|}{} & \multicolumn{2}{|c|}{8Mbit/s - underload} & \multicolumn{2}{|c|}{15Mbit/s - overload} \\ \cline{4-7}
+%		\multicolumn{3}{|c|}{} & short flows & long flows & short flows & long flows \\ \hline \hline
+%		\multicolumn{3}{|c|}{Mean size (MSS)} & 21 & 1020 & 21 & 1086 \\ \hline
+%		\multirow{10}{*}{\rotatebox{90}{Response time (seconds)}} & \multirow{5}{*}{mean} & FIFO & 0.390 & 3.519 & 3.264 & 55.788 \\ \cline{3-7}
+%    & & LAS & 0.070 & 3.944 & 0.104 & 34.517 \\ \cline{3-7}
+%		& & Run2C & 0.108 & 3.861 & 0.848 & 58.406 \\ \cline{3-7}
+%		& & EFD & 0.090 & 3.758 & 0.705 & 40.014 \\ \cline{3-7}
+%		& & LARS & 0.073 & 3.842 & 1.521 & 64.882 \\ \cline{2-7}
+%		& \multirow{5}{*}{95\%-CI} & FIFO & [0.379, 0.400] & [2.709, 4.329] & [3.211, 3.317] & [48.951, 62.625] \\ \cline{3-7}
+%    & & LAS & [0.069, 0.071] & [2.727, 5.161] & [0.099, 0.109] & [24.970, 44.064] \\ \cline{3-7}
+%		& & Run2C & [0.104, 0.112] & [2.942, 4.779] & [0.808, 0.888] & [49.902, 66.911] \\ \cline{3-7}
+%		& & EFD & [0.087, 0.093] & [2.887, 4.628] & [0.673, 0.738] & [34.397, 45.630] \\ \cline{3-7}
+%		& & LARS & [0.071, 0.075] & [2.886, 4.798] & [1.471, 1.572] & [56.686, 73.078] \\ \hline	
+%    \end{tabular}
+%		}
+%    \label{tab:resp_time}  
+%\end{table*}
 
 \subsubsection{Lock-outs}
 
