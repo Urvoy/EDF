@@ -475,7 +475,15 @@ As EFD features two queues with high and low priority respectively, Figure \ref{
 
 With EFD, a connection can be fragmented into many flows - each one is treated as fresh by the scheduler. In addition, the packets of one of these flows might be partly serviced in high priority or low priority queue: the first \textit{th} packets are serviced by the high priority queue and the rest by the low priority queue. We call this phenomenon ``flow fragmentation''. It is in clear contrast to FIFO, LAS and RuN2C.
 
-In practice, several phenomena can lead to break a connection into many fragments. For instance,  during connection establishment, the TCP slow start algorithm limits the number of packets in flight so that it does not continuously occupy the buffer. This is however not a problem, as those flows are smaller than $th$ and thus young  TCP transfers will receive a high priority. If the flow lasts longer and it is effectively able to use its share of the capacity, then the connection will eventually occupy  the buffer without interruption and therefore stay in the flow table. Figure \ref{fig:seg8} illustrates such a scenario. It is apparent that, as the connection size increases, the number of fragments tends to reach a limit so that, for the longest connections, a small number of fragments correspond to many packets.
+\begin{figure}[ht]%placement
+   \centering
+   \includegraphics[width=0.7\hsize]{./fig/flow-split}%chemin 
+   \caption{EFD considers the flows segment by segment, as there is no bookkeeping of flows when they do not have a packet in the buffer}
+   \label{fig:flow-split}
+\end{figure}
+
+
+In practice, several phenomena can lead to break a connection into many fragments. For instance,  during connection establishment, the TCP slow start algorithm limits the number of packets in flight so that it does not continuously occupy the buffer (see Figure \ref{fig:flow-split}). This is however not a problem, as those flows are smaller than $th$ and thus young  TCP transfers will receive a high priority. If the flow lasts longer and it is effectively able to use its share of the capacity, then the connection will eventually occupy  the buffer without interruption and therefore stay in the flow table. Figure \ref{fig:seg8} illustrates such a scenario. It is apparent that, as the connection size increases, the number of fragments tends to reach a limit so that, for the longest connections, a small number of fragments correspond to many packets.
 
 %"Fragmentation" is often used to describe the phenomenon in which data packet for transmission is shaped by cutting it into certain amount of small packets due to the limitation of MTU in the network. Here we borrow this concept for flows instead of packets, meaning that a single flow is cut into several pieces for some reason.  
 
