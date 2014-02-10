@@ -492,6 +492,21 @@ In practice, several phenomena can lead to break a connection into many fragment
   \label{fig:seg8}
 \end{figure}
 
+\begin{figure}[ht]
+  \centering
+%  \subfigure[Comparison between flows and subflows - cdf]{\includegraphics[width=0.495\textwidth]{./Part1/Chapter4/fig/chapter_one/mg1_cdf_bp_5.eps}}
+%  \subfigure[Comparison between flows and subflows - prctile]{\includegraphics[width=0.495\textwidth]{./Part1/Chapter4/fig/chapter_one/mg1_prctile_bp_5.eps}}	
+%  \subfigure[Subflows in two queues - cdf]{\includegraphics[width=0.495\textwidth]{./Part1/Chapter4/fig/chapter_one/mg1_cdf_queue_5.eps}}  
+%  \subfigure[Subflows in two queues - prctile]{\includegraphics[width=0.495\textwidth]{./Part1/Chapter4/fig/chapter_one/mg1_prctile_queue_5.eps}}  	
+  \subfigure[CDF]{\includegraphics[width=0.495\textwidth]{./fig/analysis/mg1_cdf_bp_5_all.eps}}
+  \subfigure[Mass-Weighted Distribution]{\includegraphics[width=0.495\textwidth]{./fig/analysis/mg1_prctile_bp_5_all.eps}}          
+  \caption{Flow and subflow size distribution, workload of 5Mbit/s}
+  \label{fig:flow_subflow}
+\end{figure}
+
+In order to illustrate how a flow is split into subflows under EFD, we report the flow size and subflow size distributions in Figure \ref{fig:flow_subflow}  for an experimental setup similar to the one in Figure \ref{fig:wired_topology}.  %Ideally, EFD was designed to favor short and persistent low rate flows. In reality, the TCP congestion control policy restricts the packets' arrival behavior, beginning with slow start in general by sending packets in flights and recovering in the manner of timeout (RTO) or fast retransmit/recovery (FR/R) in case of loss event. Furthermore, even the packets sent in the same flight are not always observed to arrive to the scheduler at the same time since they may cross traffic over the same or different paths. 
+We observe from Figure \ref{fig:flow_subflow}(a) that, flows are prone to be split into many extremely small subflows, in which subflows with size less than or equal to 3 packets make up around 90\% of subflows, given that the original flow size distribution is Zipfian. In addition, subflow size distribution in the low priority queue (black dotted line) retains the heavy tail property as flow size distribution shown in mass-weighted distribution in Figure \ref{fig:flow_subflow}(b), but exhibits smaller variability in contrast to the original flow size distribution (blue dotted line). 
+
 
 To get a better understanding of the way EFD partitions traffic among the low and high priority queues, we present in Figure \ref{fig:flow_dist}(a) the distributions of transfer sizes in both queues. Due to the way EFD operates, a given transfer is broken in possibly many flows or fragments from the scheduler's viewpoint. In addition, the \textit{th} first packets of each flow are serviced by the high priority queue and the rest, if any by the low priority queue. For each TCP transfer, we sum the total number of packets serviced at the high priority queue and the low priority queue respectively over all the segments of this transfer. We further add the original distribution of transfer sizes (at the TCP layer). We observe from  Figure \ref{fig:flow_dist}(a) that the distribution of flow sizes  in the low priority queue consists of larger flows than in the high priority queue, even though long transfers can be partially or fully serviced in the high priority queue. This behavior of EFD is in contrast to Run2C, which is another Multi-Level Processor Policy, with the same number of levels and policy at each, but that adopts a fixed threshold per transfer: the first \textit{th} packet goes to the high priority queue while the rest goes to the low priority queue -- see  Figure \ref{fig:flow_dist}(b). Clearly, EFD imposes a higher load on the high priority queue as compared to Run2C. This should not be interpreted as a drawback of EFD as compared to Run2C since it allows EFD to account for rates and not only for volumes, as we further illustrate with the UDP experiments in Section \ref{sec:multi_media}. 
 
@@ -972,192 +987,6 @@ When the buffer size is large - 300 MSS for instance, there is no more unfairnes
 Compared to the results from Figure \ref{fig:avg_time_asym}, PEFD, EFDACK and LASACK do not suffer nor benefit from larger buffer space. This is in line with our previous results and the results obtained in the original EFD - see Section \ref{sec:perf_wired}, although the buffer size is directly linked to the scheduler ``memory''. This confirms that, unlike FIFO, (some) size-based scheduling policies are much less sensitive to the actual buffer size. 
 
 Overall, this section presents the adaptation and evaluation of EFD to the case of IEEE 802.11 networks, the most common half duplex links effectively in use. Compared to size-based scheduler with infinite flow states memory, the two adaptations of EFD -- PEFD and EFDACK, are marginally less efficient in combatting the TCP unfairness problem than LARS or LASACK; this is especially evident for long lived flow experiments. Nevertheless, for a more realistic workload,  this difference vanishes even for relatively short buffers. In brief, the EFD variants are simple, low overhead  schedulers that can effectively improve performance in wireless networks, without the usual drawbacks associated to size-based schedulers.
-
-\section{Towards an Analytical Model of EFD}
-\label{sec:analysis_efd}
-
-In this section, we first underscore the complexity of deriving an analytical model for EFD. Next, we propose a simple model that enables to investigate the impact of the scheduling policy used in the high priority queue of EFD variants, namely LAS+FIFO, LAS+LAS, FIFO+LAS and FIFO+FIFO. 
-
-\subsection{Flows vs. subflows in EFD}
-Analytical models have been proposed for FIFO, LAS and Run2C \cite{kleinrock_76_queueing,Avrachenkov04Run2c,Rai04performancemodels} for an M/G/1 model, \textit{i.e.}, assuming a Poisson arrival process of flows and a single bottleneck path. EFD bears an additional level of complexity as the scheduler does not work at the flow level but rather at a sub level consisting of groups of packets of a flow.
-Let us consider the example of a TCP connection in its early infancy. Assuming that  delayed ACK is turned off, and neglecting the possible interaction with other flows and the connection set-up, the scheduler will create an entry for the first data packet, delete it upon the packet's departure from the queue, create a new entry for the second flight of 2 packets, delete it upon departure, \textit{etc}. Consequently, the TCP connection may be split over time into several fragments handled independently by the scheduler. We denote ``subflows'' those fragments resulting from EFD bookkeeping mechanism. %Figure \ref{fig:subflow_scheme} illustrates a sequence of subflows from the same flow. %Each subflow is truncated by a preset threshold \textit{th}, aiming at giving high priority to the beginning of each subflow so as to eventually favor short and persistent low rate flows, and avoid lock-outs without paying a too high price in terms of flow bookkeeping. 
-
-%how a flow is split into sequence of subflows by the scheduler and how each subflow is discriminated by the threshold method, being served with low or high priority.
-
-
-%Motivation for EFD's variants - use analytic models to help to understand the simulation
-
-%Overall, EFD retains the desireable property of size-based scheudling, namely small response time to short flows. 
-
-%considering a single dimension of a flow, namely accumulated size only without seems to be not rigorous
-%\vspace{-5mm}
-%\begin{figure}[ht!]
-%   \centering
-%    \includegraphics[width=0.8\textwidth,angle=0]{./fig/analysis/issue_two/subflow/subflow.eps}
-%  \caption{How a flow is split into subflows?}
-%  \label{fig:subflow_scheme}  
-%\end{figure}
-
-In order to illustrate how a flow is split into subflows under EFD, we report the flow size and subflow size distributions in Figure \ref{fig:flow_subflow}  for an experimental setup similar to the one in Figure \ref{fig:wired_topology}.  %Ideally, EFD was designed to favor short and persistent low rate flows. In reality, the TCP congestion control policy restricts the packets' arrival behavior, beginning with slow start in general by sending packets in flights and recovering in the manner of timeout (RTO) or fast retransmit/recovery (FR/R) in case of loss event. Furthermore, even the packets sent in the same flight are not always observed to arrive to the scheduler at the same time since they may cross traffic over the same or different paths. 
-We observe from Figure \ref{fig:flow_subflow}(a) that, flows are prone to be split into many extremely small subflows, in which subflows with size less than or equal to 3 packets make up around 90\% of subflows, given that the original flow size distribution is Zipfian. In addition, subflow size distribution in the low priority queue (black dotted line) retains the heavy tail property as flow size distribution shown in mass-weighted distribution in Figure \ref{fig:flow_subflow}(b), but exhibits smaller variability in contrast to the original flow size distribution (blue dotted line). 
-
-\begin{figure}[ht]
-  \centering
-%  \subfigure[Comparison between flows and subflows - cdf]{\includegraphics[width=0.495\textwidth]{./Part1/Chapter4/fig/chapter_one/mg1_cdf_bp_5.eps}}
-%  \subfigure[Comparison between flows and subflows - prctile]{\includegraphics[width=0.495\textwidth]{./Part1/Chapter4/fig/chapter_one/mg1_prctile_bp_5.eps}}	
-%  \subfigure[Subflows in two queues - cdf]{\includegraphics[width=0.495\textwidth]{./Part1/Chapter4/fig/chapter_one/mg1_cdf_queue_5.eps}}  
-%  \subfigure[Subflows in two queues - prctile]{\includegraphics[width=0.495\textwidth]{./Part1/Chapter4/fig/chapter_one/mg1_prctile_queue_5.eps}}  	
-  \subfigure[CDF]{\includegraphics[width=0.495\textwidth]{./fig/analysis/mg1_cdf_bp_5_all.eps}}
-  \subfigure[Mass-Weighted Distribution]{\includegraphics[width=0.495\textwidth]{./fig/analysis/mg1_prctile_bp_5_all.eps}}          
-  \caption{Flow and subflow size distribution, $\rho=0.5$}
-  \label{fig:flow_subflow}
-\end{figure}
-
-%Given the subflows obtained from flows, when applying the threshold method, each subflow is cut into two parts - one directed to the high priority queue while the other one goes to the low priority queue, if the subflow size is equal to or larger than the threshold value \textit{th}. For simplicity, we term them as subflows without changing the name, but accompany with high or low priority queue for distinction from original subflows. We report the subflow size distribution in high and low priority queue respectively (red and green curves) in Figure \ref{fig:flow_subflow}, in which subflow size distribution in high priority queue is in essence the same as original subflow size distribution but truncated at threshold \textit{th} - which is set to 20 MSS in our experiments. The subflows in low priority coming from the remaining of the original subflows by subtracting the first \textit{th} packets, reveal a less pronounced heavy tail property. 
-
-
-%
-%Recall that in EFD, a flow entry remains in the table as long as there is at least one corresponding packet present in the queue, and is dropped immediately when the last packet in the queue leaves. Let us consider the example of a TCP connection in its early infancy. Assuming that the delayed ack is turned off, and neglecting the possible interaction with other flows and the connection set-up, the scheduler will create an entry for the first data packet, delete it upon the packet's departure from the queue, create a new entry for the second flight of 2 packets, delete it upon departure, etc. Consequently, a TCP connection (or UDP transfers) may be splitted over time into several fragments handled independently by the scheduler. We call this phenomenon ``flow fragmentation''. It is in clear contrast to FIFO, LAS and RuN2C. We refer to those fragments which are originally splitted from a flow as ``subflows''. Thus, unlike prior policies, to derive an analytic model for EFD discipline is not straightforward.
-%
-%\subsection{Flow fragmentation}
-%%With EFD, a connection can be fragmented into many flows - each one is treated as fresh by the scheduler. In addition, the packets of one of these flows might be partly serviced in high priority or low priority queue: the first \textit{th} packets are serviced by the high priority queue and the rest by the low priority queue. 
-%
-%In practice, several phenomena can lead to break a connection into many fragments. For instance,  during connection establishment, the TCP slow start algorithm limits the number of packets in flight so that it does not continuously occupy the buffer. This is however not a problem, as those flows are smaller than $th$ and thus the start of the TCP transfer will receive a high priority. If the flow lasts longer and it is effectively able to use its share of the capacity, then the connection will eventually occupy  the buffer without interruption and therefore stay in the flow table. Figure \ref{fig:seg8} illustrates such a scenario. It is apparent that, as the connection size increases, the number of fragments tends to reach a limit so that, for the longest connections, a small number of fragments correspond to many packets.
-%
-%\begin{figure}[ht]
-%  \centering
-%  \includegraphics[width=0.65\textwidth]{./fig/analysis/internal_dynamics/segment_8}
-%  \caption{Number of segments per connection - workload of 8Mbit/s}
-%  \label{fig:seg8}
-%\end{figure}
-
-%To get a better understanding of the way EFD partitions traffic among the low and high priority queues, we present in Figure \ref{fig:flow_dist}(a) the distributions of transfer sizes in both queues. Due to the way EFD operates, a given transfer is broken in possibly many flows or fragments from the scheduler's viewpoint. In addition, the \textit{th} first packets of each flow are serviced by the high priority queue and the rest, if any by the low priority queue. For each TCP transfer, we sum the total number of packets serviced at the high priority queue and the low priority queue respectively over all the segments of this transfer. We further add the original distribution of transfer sizes (at the TCP layer). We observe from  Figure \ref{fig:flow_dist}(a) that the distribution of flow sizes  in the low priority queue consists of larger flows than in the high priority queue, even though long transfers can be serviced in the high priority queue. This behavior of EFD is in contrast to Run2C, which is another Multi-Level Processor Policy, with the same number of levels and policy at each, but that adopts a fixed threshold per transfer: the first \textit{th} packet goes to the high priority queue while the rest goes to the low priority queue -- see  Figure \ref{fig:flow_dist}(b). Clearly, EFD imposes a higher load on the high priority queue as compared to Run2C. This should not be interpreted as a drawback of EFD as compared to Run2C since it allows EFD to account for rates and not only for volumes, as we further illustrate with the UDP experiments that we describe below. 
-%
-%\begin{figure}[ht]
-%  \centering
-%  \subfigure[EFD]{\includegraphics[width=0.49\textwidth]{./fig/analysis/internal_dynamics/cumulated_cdf_8}}
-% \subfigure[RuN2C]{\includegraphics[width=0.49\textwidth]{./fig/analysis/internal_dynamics/run2c_isolated_cdf_8}}
-%  \caption{Distribution of flow volumes in two queues - workload of 8Mbit/s}
-%  \label{fig:flow_dist}
-%\end{figure}
- 
-\subsection{Analysis of EFD variants}
-
-Due to the difficulty to infer the relation between the initial flow size distribution and the resulting subflow distribution at the scheduler, we restrict our analysis to the high priority queue of  EFD variants. Note that we assume a wired and not a wireless network as modeling the return path in an 802.11 network is complex due to the half duplex nature of 802.11. Two scheduling policies can be used for this queue, either FIFO or LAS.  We report in Figure \ref{fig:efd_variants} the response time of all flows as well as a zoom on the small flows that highlight the apparently better performance obtained when using FIFO instead of LAS at this queue. Those results are qualitatively similar to the ones obtained with the WLAN experiments in Section \ref{sec:perf_wlan}.
-
-We consider an M/G/1 model at the subflow level, which is necessarily an approximation as the subflow arrival process at the high priority queue is not necessarily a Poisson process, even if the flow process at the two queues (low and high priority) is. We thus consider an M/G/1/PS or M/G/1/LAS model as a PS model (at flow level) is known to be a good model for a  FIFO queue (at packet level), while LAS  at flow level can be modeled as LAS at packet level \cite{Rai04performancemodels}.
-
-The average transfer time for a flow with  service requirement $x$ in a M/G/1-PS queue is given by:
-
-\begin{equation}
-E[T(x)]_{PS} = \frac{x}{1-\rho}
-\label{eq:ps}
-\end{equation}
-
-and that in M/G/1-LAS queue is given by:
-
-\begin{equation}
-E[T(x)]_{LAS} = \frac{W_{o}(x) + x}{1-\rho(x)}
-\label{eq:las}
-\end{equation} 
-where $W_{o}(x)$ is the average backlog of packets  is:
-\begin{equation}
-W_{o}(x) = \frac{\lambda m_{2}(x)}{2(1-\rho(x))}
-\end{equation} 
-with  $m_{i}(x)$ and $\rho(x)$  given by:
-\begin{equation*}
-m_{i}(x) = \int_0^x u^i f(u) \mathrm{d}u + x^iF^c(x),
-\end{equation*}
-\begin{equation*}
-\rho(x) = \lambda m_{1}(x).
-\end{equation*}
-
-Applications of the models with parameter of the subflow distribution derived from the simulation results\footnote{We are thus only able, at the moment, to use an hybrid approach mixing analytical modeling and simulation to assess the performance of EFD.}, leads to the response time at the subflow level, while are interested in the assessing the flow time at the flow level. We further  need a technique to derive the flow response times from the subflow response times.  We consider two approaches:
-\begin{itemize}
-\item {\bf The TCP-rule based Model} With this model, we rely in the window grow lodel a TCP  NewReno connection with delayed ACK enabled reported by B. Sikdar \textit{et al.} \cite{Sikdar01analyticmodels}:
-
-\begin{equation}
-cwnd_{n} = \lfloor 2^{(n-1)/2} + 2^{(n-2)/2} \rfloor
-\end{equation}
-
-which produces the following sequence of window size (which we will consider as subflows):
-
-\begin{equation*}
-1,2,3,4,6,9,13,19,27,38,54,...
-\end{equation*}
-
-Suppose that the maximum congestion window is set to 64.5KB, which is equivalent to 43MSS. Then the sequence will be capped to 
-
-\begin{equation*}
-1,2,3,4,6,9,13,19,27,38,43,43,...
-\end{equation*}
-
-Under this logic, a TCP connection is transfered as a sequence of subflows and we can obtain the response time at flow level by summing the response times of the subflow breakdown given by the model. Unfortunately, the distribution of subflows given by this model is far from the one observed by simulation (see Figure \ref{fig:flow_subflow}). Consequently the flow response distribution (not presented here) is also inaccurate.
-\item {\bf Trace driven approach.} An alternative and simpler approach to shift from subflow to flow  is to derive the subflow breakdown from the distribution of subflows in an empirical manner. To explain this method, let us take the example of a flow with 3 data packets. The breakdown gives 1+2. Hence, the following packets will go in the queue: one SYN, one ACK, a single data packet and then a group of two data packets, one FIN, and one ACK. Let Tsub(1) and Tsub(2) be the response time of the subflows of size 1 and 2 respectively in the queue. The response time of the flow in the queue is: T(3)=5Tsub(1)+1Tsub(2) as we need to further account for the three-way handshake and tear down phase of TCP (hence a SYN and a FIN packet). This trace driven approach provides  a response time distribution at flow level, Figure \ref{fig:efd_variants}(b), which is close to the results obtained by simulation, Figure \ref{fig:efd_variants}(c). 
-\end{itemize}
-
-The latter result validates the discrepancy observed between EFD variants, which is thus not only a simulation artifact, but corroborates our intuition that the lower CoV of the arrival process at the high priority queue explains the better performance obtained with FIFO as compared to LAS.
-
-A second conclusion from the above analysis is that the extreme design approach taken by EFD in the way flows are treated greatly increases the complexity of deriving an analytical model for EFD. The root of the problem is twofold: (i) deriving the distribution of the subflow arrival process out of the flow arrival process and (ii) relating the flow response time out of the subflow response times. We have only scratched the surface of the problem and more efforts need to be put to obtain a complete model for EFD, both for the low and high priority queues.
-
-%We investigate the performance of the aforementioned EFD's variants -- FIFO+FIFO, LAS+FIFO, FIFO+LAS, LAS+LAS -- using a wired network configuration as presented in Section \ref{sec:wired_methodology} -- in terms of  average conditional response time. Figure \ref{fig:efd_variants}(a) reports the result collected from the simulation for all flow sizes, while Figure \ref{fig:efd_variants}(b) highlights the result for flow sizes less than or equal to the threshold \textit{th}. 
-
-\begin{figure*}[ht!]
-  \centering
-  \subfigure[all flow sizes]{\includegraphics[width=0.5\textwidth]{./fig/analysis/issue_two/mg1_variant_fs_exp_5_0.eps}}
-  \subfigure[flows sizes $\le th$]{\includegraphics[width=0.495\textwidth]{./fig/analysis/issue_two/mg1_variant_fs_exp_5_0_th.eps}}  
-%  \subfigure[subflow sizes in high priority queue]{\includegraphics[width=0.495\textwidth]{./fig/analysis/issue_two/mg1_cdf_bp_5_byte.eps}} 
-\subfigure[Analytical results for original flows]{\includegraphics[width=0.495\textwidth]{./fig/analysis/issue_three/model2/breakup_estimate_flow_ack.eps}} 
-  \caption{EFD Variants in wired setup}
-  \label{fig:efd_variants}
-\end{figure*}
-
-%We observe from Figure \ref{fig:efd_variants}(a) that FIFO+XX\footnote{We use FIFO+XX to denote the two possibilities: FIFO+FIFO and FIFO+LAS, and similar meanings are given for LAS+XX, XX+LAS and XX+FIFO.} performs slightly better than LAS+XX for short flows - with size less than 30 packets\footnote{Note that the value ``30'' is a bit larger than the threshold \textit{th} - which is set to 20 packets in our experiments, meaning that even flows with size slightly larger than \textit{th} benefit when scheduled, due to the fact that the EFD-like scheduler is prone to split a flow into groups of subflows and handles each subflow seperately.}, whose packets are generally directed to the high priority queue, implying that replacing FIFO with LAS in the high priority queue is detrimental. We believe the reason behind this observation is that, LAS features bad performance when the distribution has a low variability - see \cite{kleinrock_76_queueing}. This is the case in the high priority queue perspective here, since the subflow sizes in this queue range between 1 and 20 MSS only, and the distribution is much less skewed (CoV close to 1) than the overall flow size distribution (CoV of 6), shown in Figure \ref{fig:efd_variants}(c). 
-
-%The attempt to explain the flow-level results based on subflow-level analysis may not succeed due to two main reasons: on one hand, the subflow size distribution in high priority queue is much less skewed than the original flow size distribution, but not exactly deterministic; on the other hand, the inter-arrival process of subflows in high priority queue is no longer Poission process although the original flows arrive in a Poisson process manner -- this hypothesis is justified by QQ-plot between the distribution of inter-arrival time of subflows and a fitting distribution theorectically derived. We next endeavor to develop a model to shift from subflow to flow. 
-
-%\subsubsection{A model for shifting from subflow to flow}
-%We restrict our objective to analytically verify the performance discrepancy among EFD's variants for the flow sizes less than or equal to the threshold \textit{th}, shown in Figure \ref{fig:efd_variants}(b). We reproduce the subflows in a probabilistic way relying on the subflow size distribution obtained from the simulation - similar to the one for EFD shown in Figure \ref{fig:efd_variants}(c). Note that for EFD's variants, the subflow size distribution might be slightly different. Given the subflow size distribution, we are able to extract the probability for each subflow with specific size. So that for each incoming flow, we split it into subflows whose size is determined each time by taking a probabilistic test - the test is conducted by generating an independent random number in between 0 and 1, and comparing it to the accumulated probability to finally fix the subflow size. With this approach, we expect to produce a fairly large fraction of subflows with only few packets.
-
-%Since the distribution of subflow size are quite similar for EFD's variants, we report only the one in two priority queues for FIFO+FIFO in Figure \ref{fig:alternative_model}(a). In addition, we illustrate the subflow size distribution in high priority queue for all four variants in Figure \ref{fig:alternative_model}(b). As expected, we observe from the two figures that subflows produced with this probabilistic approach has a distribution which is very close to the one from the simulation (see Figure \ref{fig:efd_variants}(c)). We then estimate the conditional mean response time for subflows by the analytic models existing for each discipline used in high priority queue - M/G/1/PS given by Equation \ref{eq:ps} for FIFO+XX and M/G/1/LAS by Equation \ref{eq:las} for LAS+XX respectively, and add up the response time when shifting from subflows to flows. We finally demonstrate the performance of EFD's variants against flow size in Figure \ref{fig:alternative_model}(c). Note that small flows with size less than or equal to \textit{th} are no doubt splitted into subflows with size less than or equal to \textit{th}. It is therefore reasonable to construct these flows from subflows whose size is limited to \textit{th} - the response time of these subflows are calculated from the analytic models, and finally used for the estimation of the flows. 
-
-%Note that the average transfer time for a flow with the service requirement of $x$ in M/G/1-PS model is given by:
-%
-%\begin{equation}
-%E[T(x)]_{PS} = \frac{x}{1-\rho}
-%\label{eq:ps}
-%\end{equation}
-%
-%and that in M/G/1-LAS model is given by:
-%
-%\begin{equation}
-%E[T(x)]_{LAS} = \frac{W_{o}(x) + x}{1-\rho(x)}
-%\label{eq:las}
-%\end{equation} 
-%where $W_{o}(x)$ is the average backlog of packets but with truncated service time, given as
-%\begin{equation}
-%W_{o}(x) = \frac{\lambda m_{2}(x)}{2(1-\rho(x))}
-%\end{equation} 
-%
-%Qualitatively in line with the simulation results shown in Figure \ref{fig:efd_variants}(b), we do observe the discrepancy from Figure \ref{fig:alternative_model}(c) among EFD's variants. Precisely, LAS deployed in high priority queue offers larger response time, as compared to FIFO. Therefore, LAS is believed to be detrimental when the service requirement has fairly low variability. %The extreme case in which the service requirement is deterministic, has been theoretically analyzed and the similar conclusion has been made in Section \ref{section:numerical_efd}. 
-
-%\begin{figure*}[ht!]
-%  \centering
-%  \subfigure[EFD (FIFO+FIFO)]{\includegraphics[width=0.495\textwidth]{./fig/analysis/issue_three/model2/breakup_cdf_subflow_fifofifo.eps}}  		
-%  \subfigure[Subflow sizes in high priority queue]{\includegraphics[width=0.495\textwidth]{./fig/analysis/issue_three/model2/mg1_cdf_hp_5_byte.eps}}  	
-%  %\subfigure[Analytical results for subflows]{\includegraphics[width=0.495\textwidth]{./fig/analysis/issue_three/model2/breakup_estimate_subflow.eps}}   
-%  \subfigure[Analytical results for original flows]{\includegraphics[width=0.495\textwidth]{./fig/analysis/issue_three/model2/breakup_estimate_flow_ack.eps}}  
-%	\subfigure[Analytical results for original flows-control packets excluded]{\includegraphics[width=0.495\textwidth]{./fig/analysis/issue_three/model2/breakup_estimate_flow.eps}} 				
-%  \caption{A model shitfing from subflow to flow}
-%  \label{fig:alternative_model}
-%\end{figure*}
-
-%In particular, the result in Figure \ref{fig:alternative_model}(d) show that, if we don't incorporate the response time of the control packets (one SYN, one ACK, one FIN, and one ACK) to the calculation of response time for the flows when shifting from subflow to flow, we observe more pronounced discrepancy among EFD's variants, which is highly close to the one obtained from the simulation shown in Figure \ref{fig:efd_variants}(b). The accurate result should be in between Figure \ref{fig:alternative_model}(c) and Figure \ref{fig:alternative_model}(d) with the explanation that Figure \ref{fig:alternative_model}(d) is believed to underestimate the conditional response time against flows by not counting the latency introduced by the control packets, whereas Figure \ref{fig:alternative_model}(c) is likely to overestimate the results since the time to serve a control packet (for instance, ACKs) and a regular data packets are quite different.
-
-
-%To capture the For the sake of simplicity, we conduct the analysis fo EFD in wired network configuration.
-
-%In summary, we have made the effort of the first step towards numerically explaining the simulation results of the EFD discipline. However, to derive a completed analytical model of EFD is not easy, and we left it as future work. 
 
 
 \section{Conclusions}
