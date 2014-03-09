@@ -109,7 +109,7 @@
 %% \address{Address\fnref{label3}}
 %% \fntext[label3]{}
 
-\title{Early Flow Discard for Packet Scheduling over Wired and Wireless links}
+\title{Early Flow Discard for Packet Scheduling over Wired and Wireless Links}
 
 %% use optional labels to link authors explicitly to addresses:
 %% \author[label1,label2]{<author name>}
@@ -121,10 +121,10 @@
 \author[***]{Guillaume Urvoy-Keller}
 \address[*]{East China Normal University, China\footnote{This study was carried out while the author was at Eurecom, 450 Route des Chappes, 06410 Biot France}}
 \address[**]{Laboratoire LIG CNRS UMR 5217, Grenoble, France}
-\address[***]{Univ. Nice Sophia Antipolis, CNRS, I3S, UMR 7271, 06900 Sophia Antipolis}
+\address[***]{Univ. Nice Sophia Antipolis, CNRS, I3S, UMR 7271, 06900 Sophia Antipolis, France}
 \begin{abstract}
 %% Text of abstract
-By favouring flows that contribute to interactive applications, size-based scheduling methods are wildly advocated to improve the quality of experience of end users. However, the ever-increasing flow bookkeeping cost and other related concerns like the participation of prevalent media streaming etc., hamper the deployment of such methods. We have explored in the work, a radical approach called EFD to the scalability issue of size-based scheduler by limiting the memory of the scheduler to the packets in the buffer. Through extensive simulations with Ethernet and 802.11 networks, we have demonstrated that EFD meets our expectations: it gives small response time to small flows, limits lock-out of long flows, and is able to protect low-rate multimedia traffic, especially if it operates at low rate due to its limited memory. In addition, EFD solves the TCP unfairness issue of 802.11 networks either by working at the packet level (PEFD) or by accounting for the amount of traffic carried by TCP in the reverse direction (EFDACK). Particularly, EFD sees the potential to be jointly used with AQM scheme to solve the bufferbloat problem. 
+By favoring flows that contribute to interactive applications, size-based scheduling methods are wildly advocated to improve the quality of experience of end users. However, the ever-increasing flow bookkeeping cost and other related concerns -- \textit{for example} the participation of prevalent multimedia streaming, hamper the deployment of such methods. We have explored in the work, a radical approach called EFD to the scalability issue of size-based scheduler by limiting the memory of the scheduler to the packets in the buffer. Through extensive simulations with Ethernet and 802.11 networks, we have demonstrated that EFD meets our expectations: it gives small response time to small flows, limits lock-out of long flows, and is able to protect low-rate multimedia traffic, especially if it operates at low rate due to its limited memory. In addition, EFD solves the TCP unfairness issue of 802.11 networks either by working at the packet level (PEFD) or by accounting for the amount of traffic carried by TCP in the reverse direction (EFDACK). And finally, EFD sees the potential to be jointly used with AQM scheme to solve the bufferbloat problem by limiting the average delay in the queue - that would be our future work.
 \end{abstract}
 
 \begin{keyword}
@@ -159,11 +159,11 @@ In addition, the number of flows in progress can grow to a large value under hig
 Recent advances in the SDN (Software Defined Routers) demonstrate that bookkeeping of flows in commercial routers is possible. However, SDN aims at exposing the control plane and not the data plane of a switch, hence some recent efforts to extend SDN to enable the implementation of scheduling/buffer management policies, see \textit{e.g.}, \cite{sivaraman2013no}.
 %Besides, some policies feature other drawbacks. LAS may lead to severe starvation to long flows, which is known as ``lock-out'' phenomenon. Moreover, LAS and Run2C scheduling policies consider a single dimension of a flow, namely its accumulated sizes. Still, persistent low rate transfers often convey key traffic, \textit{e.g.}  voice over IP conversations. As a result, it seems natural to account both for the rate and the accumulated amount of bytes of each flow. 
 
-In this work, we explore a radical approach to the scalability issue of size-based scheduler by limiting the memory of the scheduler to the packets in the buffer. Our scheduler, that we call  EFD (Early Flow Discard) features the following properties: (i) Low response time to small and young flows, irrespectively of queue size and load; (ii) Low bookkeeping cost, \textit{\textit{i.e.}}, the number of flows tracked at any given time instant remains consistently low; (iii) Differentiation of flows based on volumes but also on rate; (iv) Avoidance of lock-outs. The two latter properties are known deficiencies of formely proposed size-based scheduler. The former occurs if a low rate flow, \textit{e.g.}, a VoIP transfer, runs for a long time and appears fat to the scheduler that simply accumulates transferred volume of flows like LAS or Run2C. The latter refers to the race condition that can occur if a long flow starts while another long flow has sent a lot of bytes, which can lead to a starvation of the older one. LARS, which accounts jointly for volumes and rates is able to work around this problem. We demonstrate that EFD behave similarly to LARS with a memory footprint orders of magnitude lower.% to its limited memory.
+In this work, we explore a radical approach to the scalability issue of size-based scheduler by limiting the memory of the scheduler to the packets in the buffer. Our scheduler, that we call  EFD (Early Flow Discard) features the following properties: (i) Low response time to small and young flows, irrespectively of queue size and load; (ii) Low bookkeeping cost, \textit{\textit{i.e.}}, the number of flows tracked at any given time instant remains consistently low; (iii) Differentiation of flows based on volumes but also on rate; (iv) Avoidance of lock-outs. The two latter properties are known deficiencies of formerly proposed size-based scheduler. The former occurs if a low rate flow, \textit{e.g.}, a VoIP transfer, runs for a long time and appears fat to the scheduler that simply accumulates transferred volume of flows like LAS or Run2C. The latter refers to the race condition that can occur if a long flow starts while another long flow has sent a lot of bytes, which can lead to a starvation of the older one. LARS, which accounts jointly for volumes and rates is able to work around this problem. We demonstrate that EFD behave similarly to LARS with a memory footprint orders of magnitude lower.% to its limited memory.
 
 %EFD manages the physical queue of an interface (at the IP level) as a set of two virtual queues corresponding to two levels of priority: the high priority queue first and the low priority queue at the tail of the buffer. Formally, EFD belongs to the family of Multi-Level Processor Sharing policies (see Section \ref{sec:related}) and is effectively a PS+PS scheduling policy. The key difference between EFD and other MLPS scheduling disciplines is the way flow states are handled. In EFD, we keep an active entry only for flows that have at least one packet present in the queue. A flow entry is deleted from the flow table upon the departure of last packet of this flow currently residing in the queue. This simple approach allows to fulfill the entire list of objectives listed above. Specifically, in EFD the active flow table size is bounded to a low value. Also, although EFD  has a limited memory footprint, it can discriminate against bursty and high rate flows. EFD is not limited to a scheduling policy but also incorporates a buffer management policy, where the packet with smallest priority gets discarded when the queue is full, as opposed to drop tail which blindly discards packets upon arrival. This mechanism is similar to the one used in previous works \cite{Rai04size-basedscheduling,DivakaranCAP10}. We first assess the performance of EFD in wired networks.
 
-The remaining of this paper is organized as follows. Section \ref{sec:related} reviews the previous work on mitigating the biases against small flows. The detailed description of EFD discipline and its adaptation to WLANs are given in Section \ref{sec:efd_alg}. We then present the performance evaluation of EFD in wired network and in 802.11 wireless network respectively in Section \ref{sec:perf_wired} and Section \ref{sec:perf_wlan}.  
+The remaining of this paper is organized as follows. Section \ref{sec:related} reviews the previous work on mitigating the biases against small flows. The detailed description of EFD discipline and its adaptation to WLANs are given in Section \ref{sec:efd_alg}. We then present the performance evaluation of EFD in wired network and in 802.11 wireless network respectively in Section \ref{sec:perf_wired} and Section \ref{sec:perf_wlan}. And finally, Section \ref{sec:conclu} concludes the paper. 
 
 %\textcolor{red}{Old intro starts here:}
 
@@ -202,20 +202,20 @@ Size-based scheduling has received a lot of attention from the research communit
 %We restrict ourselves to a seminal subset of methods proposed in the literature.
  Least Attained Service (LAS) policy \cite{Rai02size-basedscheduling}, gives priority to the flow that has received the least amount of service so far. In case that there are multiple flows with least amount of service received, all of them share the bandwidth equally in a processor sharing (PS) manner. LAS is known to be optimal if the flow size distribution has a decreasing hazard rate (DHR) \cite{Nuyens2008FB} as it becomes, in this context, a special case of the optimal Gittins policy \cite{Gittins89}.  It is well-established that LAS is able to decrease the response time and loss rate of short flows compared to a FIFO scheduler with drop-tail buffer management policy, at the expense of negligible increase in response time for long flows \cite{Rai02size-basedscheduling,Rai04size-basedscheduling,Rai04performancemodels}. As an extension of LAS, Least Attained Recent Service (LARS) \cite{Martin10Lars} applies a temporal decay to the volume of data associated with each flow. With this strategy, LARS bounds the impact of a new flow on ongoing ones and accounts not only for the volumes, but also the rate of flows. However, the implementation of LAS and LARS require to keep track of each and every ongoing flow so as to decide which packet/flow to serve next, where the processing is complex and overhead-consuming. In addition, LAS features some other drawbacks, such as starvation of long flows.% and flow discrimination based on volume (\textit{i.e.}the accumulated amount of bytes of each flow) only. 
 
-Some representatives of the family of Multi-Level Processor Sharing \linebreak[4] (MLPS) scheduling policies \cite{kleinrock_76_queueing} have also been proposed to favor short flows. An MLPS policy consists of several levels corresponding to different amounts of attained service of jobs, with possibly a different scheduling policy at each level. As a PS+PS model, Run2C \cite{Avrachenkov04Run2c}, which is a specific case of MLPS policy, is proposed and contrasted to LAS. With Run2C, short jobs, which are defined as jobs shorter than a specific threshold, are serviced with the highest priority while long jobs are serviced in a background PS queue. Run2C features key characteristics: (i) As (medium and) long jobs share a PS queue, they are less penalized than under LAS; (ii) It is proven analytically \cite{Avrachenkov04Run2c} that a M/G/1/PS+PS queue offers a smaller average response time than an M/G/1/PS queue, which is the classical model of a network switch/router implementing the FIFO scheduling policy and shared by homogeneous (similar RTT) TCP transfers; (iii) Run2C avoids the lock-out phenomenon observed under LAS \cite{Martin10Lars}, where a long flow might be blocked for a large amount of time by another long flow. However, Run2C needs to check, for each incoming packet, if it belongs to a short or to a long flow. This is achieved thanks to a modification of the TCP protocol so as to encode in the TCP sequence number the actual number of bytes sent by the flow so far \cite{Avrachenkov04Run2c}. Such an approach, which requires a global modification of all end hosts, is questionable\footnote{Other works aim at favoring short flows, by marking the packets at the edge of the network so as to relieve the scheduler from flow bookkeeping \cite{Noureddine02improvingthe}. However, the deployment of DiffServ is not envisaged in the near future at the Internet scale.}. Moreover, similarly to LAS, Run2C classifies flows based on the accumulated number of bytes they have sent, without taking the flow rate into account. Note that, long-lived low rate flows, \textit{e.g.} VoIP connections, are widely observed in today's Internet and require to be properly protected when coexiting with heterogeneous application traffic. 
+Some representatives of the family of Multi-Level Processor Sharing \linebreak[4] (MLPS) scheduling policies \cite{kleinrock_76_queueing} have also been proposed to favor short flows. An MLPS policy consists of several levels corresponding to different amounts of attained service of jobs, with possibly a different scheduling policy at each level. As a PS+PS model, Run2C \cite{Avrachenkov04Run2c}, which is a specific case of MLPS policy, is proposed and contrasted to LAS. With Run2C, short jobs, which are defined as jobs shorter than a specific threshold, are serviced with the highest priority while long jobs are serviced in a background PS queue. Run2C features key characteristics: (i) As (medium and) long jobs share a PS queue, they are less penalized than under LAS; (ii) It is proven analytically \cite{Avrachenkov04Run2c} that a M/G/1/PS+PS queue offers a smaller average response time than an M/G/1/PS queue, which is the classical model of a network switch/router implementing the FIFO scheduling policy and shared by homogeneous (similar RTT) TCP transfers; (iii) Run2C avoids the lock-out phenomenon observed under LAS \cite{Martin10Lars}, where a long flow might be blocked for a large amount of time by another long flow. However, Run2C needs to check, for each incoming packet, if it belongs to a short or to a long flow. This is achieved thanks to a modification of the TCP protocol so as to encode in the TCP sequence number the actual number of bytes sent by the flow so far \cite{Avrachenkov04Run2c}. Such an approach, which requires a global modification of all end hosts, is questionable\footnote{Other works aim at favoring short flows, by marking the packets at the edge of the network so as to relieve the scheduler from flow bookkeeping \cite{Noureddine02improvingthe}. However, the deployment of DiffServ is not envisaged in the near future at the Internet scale.}. Moreover, similarly to LAS, Run2C classifies flows based on the accumulated number of bytes they have sent, without taking the flow rate into account. Note that, long-lived low rate flows, \textit{e.g.} VoIP connections, are widely observed in today's Internet and require to be properly protected when coexisting with heterogeneous application traffic. 
 
 We term ``statelessness'' the property of a scheduler to not keep any state concerning the ongoing flows it is servicing. Run2C achieves this property albeit at the cost of a modification of TCP -  which not only makes the scheme TCP dependent, but also reduces the randomness of initial sequence numbers. The DiffServ\cite{Noureddine02improvingthe} paradigm can also be seen as stateless mechanism as flows are marked at the edges and the elements in the core need only to read DSCP to take their scheduling decision. Although appealing, they are not applicable in practice in the near future. Most of the proposed size-based schedulers, including the disciplines aforementioned, either need to track the ongoing sizes of all flows, or require changes at end-hosts. Hence, either they are not scalable or they increase complexity. 
 
-Recall that a small amount of long flows contribute to the majority of the Internet traffic load. As such, if we are able to properly identify long flows in a certain manner so as to mantain flow states for these long flows only which are limited instead of all flows, a significant overhead-saving for flow state keeping will be naturally obtained, retaining the desirable property of providing low response time to short flows as long as short flows are preferentially served over long ones. A simple way to achieve this is to apply a probabilistic method to detect long flows\footnote{Note that this mechanism is proposed in X-protect \cite{Kortebi04Xprotect} to do admission control  and not for scheduling.}\cite{Kortebi04Xprotect,Psounis05Sift}. SIFT \cite{Psounis05Sift} uses such a probabilitic scheme along with a PS+PS scheduler. In SIFT, a flow is ``short'' as long as none of its packets passes the probabilistic test. All its packets go to high priority queue until this flow is identified as ``long''. There are however \textit{false positives} induced with such strategy, which is detrimental as short flows identified as long ones by mistake will be sent to low priority queue. Another solution \cite{DivakaranCAP10} is to use a strict threshold to identify long flows. Then, the size of a flow is tracked until it crosses a threshold. Tuning the threshold value allows to avoid  \textit{false positives}  but there is still the need to maintain states for a significantly large number of ongoing flows. 
+Recall that a small amount of long flows contribute to the majority of the Internet traffic load. As such, if we are able to properly identify long flows in a certain manner so as to maintain flow states for these long flows only which are limited instead of all flows, a significant overhead-saving for flow state keeping will be naturally obtained, retaining the desirable property of providing low response time to short flows as long as short flows are preferentially served over long ones. A simple way to achieve this is to apply a probabilistic method to detect long flows\footnote{Note that this mechanism is proposed in X-protect \cite{Kortebi04Xprotect} to do admission control  and not for scheduling.}\cite{Kortebi04Xprotect,Psounis05Sift}. SIFT \cite{Psounis05Sift} uses such a probabilistic scheme along with a PS+PS scheduler. In SIFT, a flow is ``short'' as long as none of its packets passes the probabilistic test. All its packets go to high priority queue until this flow is identified as ``long''. There are however \textit{false positives} induced with such strategy, which is detrimental as short flows identified as long ones by mistake will be sent to low priority queue. Another solution \cite{DivakaranCAP10} is to use a strict threshold to identify long flows. Then, the size of a flow is tracked until it crosses a threshold. Tuning the threshold value allows to avoid  \textit{false positives}  but there is still the need to maintain states for a significantly large number of ongoing flows. 
 
-Recently, a spike-detecting AQM policy, which does not need to track sizes of flows, has been proposed  \cite{DivakaranAP11,Divakaran2012networks}. It exploits TCP's behavior by using a mechanism that detects a window of packets -- called spikes -- when the buffer length exceeds a certain threshold. This spike-detection is used to identify large flows at times of congestion, and thereafter de-prioritize them. Simulations  \cite{DivakaranAP11,Divakaran2012networks}  show   that, flows experience smaller response time under spike-detection AQM policies as compared to FIFO. However, this spike-detecting method, which shifts the flow size tracking to spike detection in the queue, requires processing of spike-size  whenever the queue length exceeds a preset value ($\beta$ packets), whose cost can be high. In addtion, finding the optimal values of parameters is practically difficult.% In \cite{Divakaran2012networks}, the author argues that the spike-detecing AQM policy would not hurt constant bit-rate and low bandwidth-consuming flows, but without providing the validation through either analytical or simulation-based studies. 
+Recently, a spike-detecting AQM policy, which does not need to track sizes of flows, has been proposed  \cite{DivakaranAP11,Divakaran2012networks}. It exploits TCP's behavior by using a mechanism that detects a window of packets -- called spikes -- when the buffer length exceeds a certain threshold. This spike-detection is used to identify large flows at times of congestion, and thereafter de-prioritize them. Simulations  \cite{DivakaranAP11,Divakaran2012networks}  show   that, flows experience smaller response time under spike-detection AQM policies as compared to FIFO. However, this spike-detecting method, which shifts the flow size tracking to spike detection in the queue, requires processing of spike-size  whenever the queue length exceeds a preset value ($\beta$ packets), whose cost can be high. In addition, finding the optimal values of parameters is practically difficult.% In \cite{Divakaran2012networks}, the author argues that the spike-detecing AQM policy would not hurt constant bit-rate and low bandwidth-consuming flows, but without providing the validation through either analytical or simulation-based studies. 
 Finally, large buffers are required so that as many packets of large flows as possible can simultaneously reside in the queue in order to detect large spikes, and hence large flows. In case of wireless link equipped with an access point(AP), whose buffer size is typically small (no more than a few tens of packets), this approach is therefore not applicable.
 
 
 \section{Early Flow Discard scheduling}
 \label{sec:efd_alg}
 
-In this section, we first generally describe how EFD manages space and time priority. We next discuss the adaptation of EFD in an 802.11 context. We also extend the original design of EFD by considerig alternative scheduling policies for the low and high priority queues, letting the discussion of their impact in Section \ref{section:4schemes}. 
+In this section, we first generally describe how EFD manages space and time priority. We next discuss the adaptation of EFD in an 802.11 context. We also extend the original design of EFD by considering alternative scheduling policies for the low and high priority queues, letting the discussion of their impact in Section \ref{section:4schemes}. 
 
 \subsection{EFD algorithm}
 EFD belongs to the family of Multi-Level Processor Sharing scheduling policy. EFD features two queues. The low priority queue is served only if the high priority queue is empty. Both queues are drained in a FIFO manner at the packet level (which is in general modeled as a PS queue at flow level). In practice, a single physical queue for packet storage is divided into two virtual queues. The first part of the physical queue is dedicated to the virtual high priority queue while the second part is the low priority queue. A pointer is used to indicate the position of the last packet of the virtual high priority queue. This idea is similar to the one proposed in the Cross-Protect mechanism \cite{Kortebi04Xprotect}. %We now turn our attention to the flow management in EFD and the enqueuing and dequeuing operations. We eventually discuss the spatial policy used when the physical queue gets full.
@@ -367,7 +367,7 @@ For the specific case of TCP traffic, variants of LAS and LARS \cite{Keller2008I
 %
 %Another objective of this paper is to test EFD's applicability to WLAN infrastructure networks. 
 
-We propose two adaptations of EFD in WLAN networks, EFDACK and PEFD,  that aim at mitigating the TCP unfairness problem. EFDACK relied on the same idea as LAS and LARS adapations: keeping  track of the amount of bytes sent by each flow in both the upload and download directions. %, which requires reading TCP segments (the acknowledgment number field) within IP packets. This is the same idea as the one of LASACK \cite{Keller2008Improving}. 
+We propose two adaptations of EFD in WLAN networks, EFDACK and PEFD,  that aim at mitigating the TCP unfairness problem. EFDACK relied on the same idea as LAS and LARS adaptations: keeping  track of the amount of bytes sent by each flow in both the upload and download directions. %, which requires reading TCP segments (the acknowledgment number field) within IP packets. This is the same idea as the one of LASACK \cite{Keller2008Improving}. 
 In contrast, PEFD keeps track of the number of packets and does not distinguish between uploads and downloads. 
 
 
@@ -431,8 +431,8 @@ Transfers are performed over TCP or UDP depending on the simulation. For each si
 In this section, we present a detailed analysis of the way EFD manages flows. This is of utmost interest as it is a key distinguishing property of EFD as compared to other size-based scheduling policy. We focus on the following aspects:
 \begin{itemize}
 \item The evolution of the flow table size;
-\item How traffic is split between the low and high priority queue.
-\item  How connections are fragmented by the scheduler due to the insertion/removal process within the flow table;
+\item How traffic is split between the low and high priority queue;
+\item  How connections are fragmented by the scheduler due to the insertion/removal process within the flow table.
 \end{itemize}
 
 
@@ -463,8 +463,8 @@ As EFD features two queues with high and low priority respectively, Figure \ref{
 
 \begin{figure}[ht]
   \centering
-  \subfigure[workload of 8Mbit/s (underload)]{\label{fig:wifib-01}\includegraphics[width=0.49\textwidth]{./fig/wired/internal_dynamics/slpktsub_8.eps}}
-  \subfigure[workload of 15Mbit/s (overload)]{\label{fig:wifia-01}\includegraphics[width=0.49\textwidth]{./fig/wired/internal_dynamics/slpktsub_20.eps}}  
+  \subfigure[workload of 8Mbit/s (underload)]{\label{fig:wifib-01}\includegraphics[width=0.49\textwidth]{./fig/wired/internal_dynamics/slpktsub_8}}
+  \subfigure[workload of 15Mbit/s (overload)]{\label{fig:wifia-01}\includegraphics[width=0.49\textwidth]{./fig/wired/internal_dynamics/slpktsub_20}}  
   %\includegraphics[width=0.4\textwidth]{./fig/internal_dynamics/slpktsub_20}
   \caption{Evolution of high and low priority queue size  in both underload and overload.}
   \label{fig:queue_evo}
@@ -477,7 +477,8 @@ With EFD, a connection can be fragmented into many flows - each one is treated a
 
 \begin{figure}[ht]%placement
    \centering
-   \includegraphics[width=0.7\hsize]{./fig/flow-split}%chemin 
+  \includegraphics[width=0.8\textwidth]{./fig/flow-split}%chemin 
+	%\includegraphics[width=0.7\hsize]{./fig/flow-split}%chemin 
    \caption{EFD considers the flows segment by segment, as there is no bookkeeping of flows when they do not have a packet in the buffer}
    \label{fig:flow-split}
 \end{figure}
@@ -506,13 +507,13 @@ In practice, several phenomena can lead to break a connection into many fragment
 %  \subfigure[Comparison between flows and subflows - prctile]{\includegraphics[width=0.495\textwidth]{./Part1/Chapter4/fig/chapter_one/mg1_prctile_bp_5.eps}}	
 %  \subfigure[Subflows in two queues - cdf]{\includegraphics[width=0.495\textwidth]{./Part1/Chapter4/fig/chapter_one/mg1_cdf_queue_5.eps}}  
 %  \subfigure[Subflows in two queues - prctile]{\includegraphics[width=0.495\textwidth]{./Part1/Chapter4/fig/chapter_one/mg1_prctile_queue_5.eps}}  	
-  \subfigure[CDF]{\includegraphics[width=0.495\textwidth]{./fig/analysis/mg1_cdf_bp_5_all.eps}}
-  \subfigure[Mass-Weighted Distribution]{\includegraphics[width=0.495\textwidth]{./fig/analysis/mg1_prctile_bp_5_all.eps}}          
+  \subfigure[CDF]{\includegraphics[width=0.495\textwidth]{./fig/analysis/mg1_cdf_bp_5_all}}
+  \subfigure[Mass-Weighted Distribution]{\includegraphics[width=0.495\textwidth]{./fig/analysis/mg1_prctile_bp_5_all}}          
   \caption{Flow and segment size distribution, workload of 5Mbit/s}
   \label{fig:flow_subflow}
 \end{figure}
 
-Reciprocally,  the  fragment size distribution is a good indicator of what the scheduler effectively deals with. 
+Reciprocally, the  fragment size distribution is a good indicator of what the scheduler effectively deals with. 
 We observe from Figure \ref{fig:flow_subflow}(a) that flows are prone to be split into many extremely small segments, of which 90\% are smaller than 3 packets, given that the original flow size distribution is Zipfian. The steps correspond to the connections start-up: they all start by sending 1 packet, then two and three, in accordance with growth pattern of  a TCP New Reno connection with delayed ACK enabled~\cite{Sikdar01analyticmodels} . In addition, segment size distribution in the low priority queue (black dotted line) retains the heavy tail property as flow size distribution shown in mass-weighted distribution in Figure \ref{fig:flow_subflow}(b), but exhibits smaller variability in contrast to the original flow size distribution (blue dotted line). 
 
 
@@ -542,7 +543,7 @@ To illustrate the first 3 items, we consider a TCP workload with homogeneous tra
 The approaches to maintain the flow table in the size-based scheduling policies proposed so far can be categorized as follows: %, several approaches have been proposed to maintain the flow list:
 \begin{itemize}
  \item Full flow table approach as in LAS \cite{Rai04size-basedscheduling}. An argument in favor of keeping one state per active flow is that the number of flows to handle remains moderate as it is expected that such a scheduling policy be implemented at the edge of the Internet.
-\item No flow table approach: an external support is provided to the scheduler, either at the end-hosts by modificaitons of the transport layer \cite{Avrachenkov04Run2c} or by some intermediate boxes, as in the case of a DiffServ scheme \cite{Noureddine02improvingthe}, that marks the packets. The extent of the changes required to the Internet architecture prevents the deployment of such approaches in a near future.
+\item No flow table approach: an external support is provided to the scheduler, either at the end-hosts by modifications of the transport layer \cite{Avrachenkov04Run2c} or by some intermediate boxes, as in the case of a DiffServ scheme \cite{Noureddine02improvingthe}, that marks the packets. The extent of the changes required to the Internet architecture prevents the deployment of such approaches in a near future.
 %an external mechanism marks the packets or the information is implicit (coded in the TCP SEQ number in Run2C) \cite{Avrachenkov04Run2c,Noureddine02improvingthe}
 \item Probabilistic approaches:  a test is performed at each packet arrival for flows that have not already be incorporated in the flow table \cite{DivakaranCAP10,Kortebi04Xprotect,Psounis05Sift}. The test is calibrated in such a way that only long flows should end up in the flow table. Still, false positives are possible. Several options have been envisaged to combat this phenomenon especially, a re-testing approach \cite{Psounis05Sift} or an approach where the flows in the flow table are actually considered as long flows once they have generated more than a certain amount of packets/bytes after their initial insertion \cite{DivakaranCAP10}.
 \item EFD deterministic approach:  the EFD approach is fully deterministic as flow entries are removed from the flow table once they have no more packet in the queue. 
@@ -745,13 +746,13 @@ The low priority queue of EFD is managed as a FIFO queue. As such, we expect EFD
 \subsubsection{The Case of Multimedia Traffic}\label{sec:multi_media}
 In the TCP scenario considered above, FTP servers were homogeneous in the sense that they had the same access link capacity and the same latency to each client. The transfer rate was controlled by TCP. In such conditions, it is difficult to illustrate how EFD takes into accounts the actual transmission rate of data sources. In this section, we have added a single CBR flow to the TCP workload used previously.% traffic defined in Section \ref{sec:workload} (TCP transfers of Zipf distributed flow size and exponential distributed inter-arrival time). 
 
-We consider two  rates 64Kb/s and 500Kb/s for the CBR flow, representing typical audio (\textit{e.g.}, VoIP) and video stream (\textit{e.g.}, YouTube video - even though the YouTube uses HTTP streaming)  respectively. The background load also varies - 4, 8 and 12Mbps-  which correspond to underload/moderate/overload regimes as the bottleneck capacity is 10 Mbps. To avoid the warm-up period of the background workload, the CBR flow is started at time t=10s and keeps on sending packets continuously until the end of the simulation. The simulation lasts for 1000 seconds. Since small buffers are prone to packet loss, we assign to the bottleneck a buffer of 50 packets, instead of 300 packets previously. The loss rates experienced by the CBR flow are given in Figure \ref{fig:loss_rate}, in which a well-known fair scheduling scheme called SCFQ \cite{Golestani94SCFQ} is added for the comparison, in addition to the disciplines mentioned before.
+We consider two  rates 64Kb/s and 500Kb/s for the CBR flow, representing typical audio (\textit{e.g.}, VoIP) and video stream (\textit{e.g.}, YouTube video - even though the YouTube uses HTTP streaming)  respectively. The background load also varies - 4, 8 and 12Mbps-  which correspond to underload/moderate/overload regimes as the bottleneck capacity is 10 Mbps. To avoid the warm-up period of the background workload, the CBR flow is started at time t=10s and keeps on sending packets continuously until the end of the simulation. The simulation lasts for 1000 seconds. Since small buffers are prone to packet loss, we assign to the bottleneck a buffer of 50 packets, instead of 300 packets previously. The loss rates experienced by the CBR flow are given in Figure \ref{fig:loss_rate}, in which a well-known fair scheduling scheme called SCFQ \cite{Golestani94} is added for the comparison, in addition to the disciplines mentioned before.
 
 \begin{figure}[ht!]
    \centering
     %\includegraphics[width=0.55\textwidth]{./udp3/loss/udp_loss_8.eps}
-  	\subfigure[a CBR flow with rate of 64Kb/s]{\includegraphics[width=0.49\textwidth]{./fig/wired/multimedia/loss_64/udp_loss.eps}}
-  	\subfigure[a CBR flow with rate of 500Kb/s]{\includegraphics[width=0.49\textwidth]{./fig/wired/multimedia/loss_500/udp_loss.eps}}   
+  	\subfigure[a CBR flow with rate of 64Kb/s]{\includegraphics[width=0.49\textwidth]{./fig/wired/multimedia/loss_64/udp_loss}}
+  	\subfigure[a CBR flow with rate of 500Kb/s]{\includegraphics[width=0.49\textwidth]{./fig/wired/multimedia/loss_500/udp_loss}}   
   	\caption{Loss rate experienced by a CBR flow in different background loads}
   	\label{fig:loss_rate}  
 \end{figure}
@@ -762,8 +763,8 @@ To further analyze this behavior, we next examine the inter-departure time distr
 
 \begin{figure}[ht]
   \centering
-  \subfigure[CDF of inter-departure times for a CBR flow with 4Mb/s background traffic]{\includegraphics[width=0.49\textwidth]{./fig/wired/multimedia/jitter_64/inter_time_4.eps}}  
-  \subfigure[CDF of inter-departure times for a CBR flow with 12Mb/s background traffic]{\includegraphics[width=0.49\textwidth]{./fig/wired/multimedia/jitter_64/inter_time_12.eps}}     
+  \subfigure[CDF of inter-departure times for a CBR flow with 4Mb/s background traffic]{\includegraphics[width=0.49\textwidth]{./fig/wired/multimedia/jitter_64/inter_time_4}}  
+  \subfigure[CDF of inter-departure times for a CBR flow with 12Mb/s background traffic]{\includegraphics[width=0.49\textwidth]{./fig/wired/multimedia/jitter_64/inter_time_12}}     
   \caption{Jitter of a CBR flow with rate of 64Kb/s}
   \label{fig:jitter64}
 \end{figure}
@@ -781,7 +782,7 @@ To further analyze this behavior, we next examine the inter-departure time distr
 %\cite{Golestani94SCFQ}
 As the rate of the CBR flow increases from 64Kbps to 500Kbps, no packet loss is observed for EFD in underload/moderate load  conditions, similarly to SCFQ, whereas  the other scheduling disciplines (FIFO, LAS, Run2C and LARS) are hit at  various degrees. In overload, EFD and LARS blow up similarly to LAS (which still represents an upper bound on the loss rate as the CBR flow is continuously granted the lowest priority). EFD behaves slightly better than LARS as the load in the high priority queue is by definition lower under EFD than under Run2C.%, especially the observation of packet loss under LARS. In overload regime (with the background traffic of 6Mbps), in contrast to FIFO, SCFQ and Run2C, considerable packet losses are experienced by EFD and LARS, but EFD is still better than LARS in terms of loss rate.
 
-When looking at the above results from a high level perspective, one can think at first sight that FIFO and SCFQ do a decent job as they provide low loss rates to the CBR flow in most scenarios (under or overload). However, those apparently appealing results are a side effect of a well-known and non desirable behavior of FIFO. Indeed, under FIFO, the non responsive CBR flow adversely impacts the TCP workload, leading to high loss rates. This is especially true for the CBR flow working at 500 kbps. SCFQ tends to behave similarly if  not paired with an appropriate buffer management policy \cite{Golestani94SCFQ}. In contrast, LARS and EFD offer a nice trade-off as they manage to simultaneously grant  low loss rates to the CBR flow with a low penalty to the TCP background workload. Run2C avoids the  infinite memory of LAS but still features quite high loss rates since the CBR flow remains continuously stuck in the low priority queue.
+When looking at the above results from a high level perspective, one can think at first sight that FIFO and SCFQ do a decent job as they provide low loss rates to the CBR flow in most scenarios (under or overload). However, those apparently appealing results are a side effect of a well-known and non desirable behavior of FIFO. Indeed, under FIFO, the non responsive CBR flow adversely impacts the TCP workload, leading to high loss rates. This is especially true for the CBR flow working at 500 Kbps. SCFQ tends to behave similarly if  not paired with an appropriate buffer management policy \cite{Golestani94SCFQ}. In contrast, LARS and EFD offer a nice trade-off as they manage to simultaneously grant  low loss rates to the CBR flow with a low penalty to the TCP background workload. Run2C avoids the  infinite memory of LAS but still features quite high loss rates since the CBR flow remains continuously stuck in the low priority queue.
 
 
 Overall, EFD manages to keep the desirable properties of size-based scheduling policies and in addition manages, with a low bookkeeping cost, to protect multimedia flows as it  implicitly accounts for the rate of this flow and not only its accumulated volume. 
@@ -807,7 +808,7 @@ In our simulations for 802.11 wireless networks, we consider a simple network co
 
 \begin{figure}[!ht]
    \centering
-    \includegraphics[width=0.5 \textwidth]{./fig/wireless/setup/wlan_topology_bandwidth.eps}
+    \includegraphics[width=0.5 \textwidth]{./fig/wireless/setup/wlan_topology_bandwidth}
   \caption{Network Set-up, with one way delay of 2ms in wired part}
   \label{fig:setup}  
 \end{figure}
@@ -915,16 +916,16 @@ We conducted experiments with a symmetric load and 10 Mb/s (moderate load) and 2
 
 \begin{figure*}[ht!]
   \centering
-  \subfigure[Workload of 10Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/4schemes/byte/mg1_tw_fs_exp_10_0.eps}}
-  \subfigure[Workload of 20Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/4schemes/byte/mg1_tw_fs_exp_20_0.eps}}  
+  \subfigure[Workload of 10Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/4schemes/byte/mg1_tw_fs_exp_10_0}}
+  \subfigure[Workload of 20Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/4schemes/byte/mg1_tw_fs_exp_20_0}}  
   \caption{Comparison between various queueing policies in EFD  queues -- Average response time, symmetric load, byte-based}
   \label{fig:asym_byte}
 \end{figure*}
 
 \begin{figure*}[ht!]
   \centering
-  \subfigure[Workload of 10Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/4schemes/pkt/mg1_tw_fs_exp_10_0.eps}}
-  \subfigure[Workload of 20Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/4schemes/pkt/mg1_tw_fs_exp_20_0.eps}}  
+  \subfigure[Workload of 10Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/4schemes/pkt/mg1_tw_fs_exp_10_0}}
+  \subfigure[Workload of 20Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/4schemes/pkt/mg1_tw_fs_exp_20_0}}  
   \caption{Comparison between various queueing policies in EFD  queues -- Average response time, symmetric load, packet-based}
   \label{fig:asym_pkt}
 \end{figure*}
@@ -940,16 +941,16 @@ We present simulation results for 10 and 20 Mb/s and for symmetric ($\frac{\lamb
 
 \begin{figure*}[ht!]
   \centering
-  \subfigure[Workload of 10Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/latency/sym/mg1_tw_fs_exp_10_0.eps}}
-  \subfigure[Workload of 20Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/latency/sym/mg1_tw_fs_exp_20_0.eps}}  
+  \subfigure[Workload of 10Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/latency/sym/mg1_tw_fs_exp_10_0}}
+  \subfigure[Workload of 20Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/latency/sym/mg1_tw_fs_exp_20_0}}  
   \caption{Comparison of EFD variants for a symmetric workload: average response time --  AP buffer of 30MSS}
   \label{fig:avg_time_sym}
 \end{figure*}
 
 \begin{figure*}[ht!]
   \centering
-  \subfigure[Workload of 10Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/latency/asym/mg1_tw_fs_exp_10_0.eps}}
-  \subfigure[Workload of 20Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/latency/asym/mg1_tw_fs_exp_20_0.eps}}  
+  \subfigure[Workload of 10Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/latency/asym/mg1_tw_fs_exp_10_0}}
+  \subfigure[Workload of 20Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/latency/asym/mg1_tw_fs_exp_20_0}}  
   \caption{Comparison of EFD variants for an asymmetric workload: average response time --  AP buffer of 30MSS}
   \label{fig:avg_time_asym}
 \end{figure*}
@@ -984,8 +985,8 @@ We considered buffer sizes ranging from 10 to 500 packets. We picked two represe
 
 \begin{figure*}[ht!]
   \centering
-  \subfigure[Workload of 10Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/buffersize/large/asym/mg1_tw_fs_exp_10_0.eps}}
-  \subfigure[Workload of 20Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/buffersize/large/asym/mg1_tw_fs_exp_20_0.eps}}  
+  \subfigure[Workload of 10Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/buffersize/large/asym/mg1_tw_fs_exp_10_0}}
+  \subfigure[Workload of 20Mbit/s]{\includegraphics[width=0.495\textwidth]{./fig/wireless/buffersize/large/asym/mg1_tw_fs_exp_20_0}}  
   \caption{Comparison of EFD variants for an asymmetric workload: average response time --  AP buffer of 300MSS}
   \label{fig:asym_buffer}
 \end{figure*}
@@ -1000,7 +1001,7 @@ Overall, this section presents the adaptation and evaluation of EFD to the case 
 \section{Conclusions}
 \label{sec:conclu}
 
-Size-based scheduling is an appealing alternative to the legacy FIFO/drop\-tail policy that (i) is unable to protect young/small flows, while they are key flows from the user perspetive, (ii) is at the root of the bufferbloat issue and (iii) worsens the TCP unfairness problem observed in 802.11 networks.  Still, the deployment of such a policy is not envisaged in the near future as they feature an original sin, which is their requirements in terms of flow bookkeeping. 
+Size-based scheduling is an appealing alternative to the legacy FIFO/drop\-tail policy that (i) is unable to protect young/small flows, while they are key flows from the user perspective, (ii) is at the root of the bufferbloat issue and (iii) worsens the TCP unfairness problem observed in 802.11 networks.  Still, the deployment of such a policy is not envisaged in the near future as they feature an original sin, which is their requirements in terms of flow bookkeeping. 
 
 In this paper, we have investigated a radical approach to the bookkeeping cost by constraining it to the buffer size of router/switch. The proposed policy, \textit{Early Flow Discard} (EFD), removes a flow entry from the table once its last packet currently residing in the queue leaves, and gives time and space priority to small/young.% flows, any of which is fresh from the scheduler's perspective, and hence the small flows and persistent low-rate flows.
 
@@ -1008,7 +1009,7 @@ In this paper, we have investigated a radical approach to the bookkeeping cost b
 
 Through extensive simulations with Ethernet and 802.11 networks, we have demonstrated that EFD meets our expectations: it gives small response time to small flows, limits lock-out of long flows, and is able to protect low-rate multimedia traffic, especially if it operates at low rate due to its limited memory. The latter means that as long as a flow requires a rate that is such that it does not create a significant backlog in the queue, it will be granted a high priority. In addition, EFD solves the TCP unfairness issue of 802.11 networks either by working at the packet level (PEFD) or by accounting for the amount of traffic carried by TCP in the reverse direction (EFDACK).%by means of two adaptations: keep track of the volumes exchanged in both directions or simply count packets in a single direction. As a low-overhead scheduler, EFD can effectively improve performance in wireless networks, without the usually drawbacks associated to size-based schedulers. 
 
-As future work, we intend to extend the analytical model proposed for the high priority queue of EFD and investigate how EFD could be used jointly with advances active queue management scheme like CoDel \cite{Jacobson12}, a rencently proposed AQM policy aims at solving bufferbloat problem. The idea would be that CoDel manages the low priority queue to limit the average delay in the queue.
+As future work, we intend to extend the analytical model proposed for the high priority queue of EFD and investigate how EFD could be used jointly with advances active queue management scheme like CoDel \cite{Jacobson12}, a recently proposed AQM policy aims at solving bufferbloat problem. The idea would be that CoDel manages the low priority queue to limit the average delay in the queue.
 %Future directions of research concerning EFD could be to conduct experiments to assess the performance of EFD in real network by implementing and incorporating the scheme into the network devices, but not only relys on simulations for the performance evaluation. In addition, deriving an analytical model for EFD scheduling policy might be a future work, although it is not a easy task. Finally, EFD sees the potential energy efficiency from the mobile device viewpoint - it can be used at the bottleneck to reshape the traffic from streaming servers before delivering it to the mobile (3G or WiFi) clients in order to reduce its energy consumption. We can implement EFD so as to make experiments to test its efficiency for this issue. 
 
 
